@@ -24,6 +24,8 @@ explicit experience supplied by its host software.
 - a read-only state analyzer for measured neural drift;
 - the four AXM roots embedded as an inspectable contract in every brain
   snapshot;
+- explicit Genesis admission for the pre-experience neural birth state;
+- deterministic G0 identity `g0:<lineage>:<sha256>`;
 - a deterministic Continuity Spine that preserves demonstrated behavior without
   freezing exact neural weights;
 - explicit PRESERVE / SUPERSEDE / FORGET continuity decisions;
@@ -45,28 +47,50 @@ state.
 
 See `ROOTS_AND_CONTINUITY.md`.
 
+## Genesis
+
+Before lived neural learning begins, a deterministic initialized brain can be
+validated and explicitly admitted as **Genesis / G0**.
+
+```text
+birth candidate
+    |
+validate exact roots + zero experience + configuration + provenance
+    |
+durable admission evidence
+    |
+G0
+    |
+WAKE / experience / SLEEP / growth
+```
+
+G0 is immutable lineage truth. It is not overwritten by later learning.
+Corrections require a new lineage/version.
+
+See `GENESIS.md`.
+
 ## State model
 
 ```text
-birth(seed)
-   |
-   v
- WAKE -- experience --> neural change + bounded replay
-   |                         |
-   | sleep()                 |
-   v                         |
- SLEEP -- replay/consolidate-+
-   |
-   | wake()
-   v
- WAKE (next cycle)
-   |
-   +--> candidate snapshot
-            |
-      Continuity Spine
-      + AXM root review
-            |
-       ACCEPT / HOLD
+G0
+ |
+ v
+WAKE -- experience --> neural change + bounded replay
+ |                         |
+ | sleep()                 |
+ v                         |
+SLEEP -- replay/consolidate+
+ |
+ | wake()
+ v
+WAKE (next cycle)
+ |
+ +--> candidate snapshot
+          |
+    Continuity Spine
+    + AXM root review
+          |
+     ACCEPT / HOLD
 ```
 
 The wake/sleep names are explicit computational phases, not claims about
@@ -102,33 +126,13 @@ The contract fingerprint travels with the bound snapshot. Changing channel
 names, order, ranges, outputs, or the contract identity changes that
 fingerprint.
 
-## Continuity example
-
-```python
-from neural.axm_brain import ContinuitySpine
-
-accepted = brain.brain.to_snapshot()
-probe = ContinuitySpine.capture(
-    "known-good-path",
-    accepted,
-    observations=((0.0, 0.0),),
-    tolerance=0.05,
-)
-spine = ContinuitySpine((probe,))
-
-# Later:
-continuity_report = spine.evaluate(candidate_snapshot)
-```
-
-A candidate may completely reorganize its internal neural representation and
-still pass. The probe checks demonstrated behavior, not weight identity.
-
 ## Truth boundary
 
 v0.2 proves that the repository has an AXM-built persistent recurrent network
 that can change neural parameters from host-supplied experience, preserve that
 state across snapshots, expose measurable state growth, carry the AXM root
-contract, and check candidate states against deterministic continuity probes.
+contract, admit a deterministic pre-experience G0, and check later candidate
+states against deterministic continuity probes.
 
 It does **not** prove general intelligence, semantic understanding, useful
 long-horizon continual learning, or superiority to WALDO. Those require
