@@ -6,9 +6,9 @@ The state analyzer is a read-only microscope over the current neural state and
 over differences between two verified brain snapshots. It does not change the
 brain, choose rewards, or decide what should be learned.
 
-## Five root directions
+## Five software directions
 
-Experiences may be tagged with one or more top-level AXM directions:
+Experiences may be tagged with one or more top-level AXM software directions:
 
 - CREATE
 - USE
@@ -16,8 +16,14 @@ Experiences may be tagged with one or more top-level AXM directions:
 - LEARN
 - DISCOVER
 
-These labels describe the direction of an experience. They do not create five
-separate hidden personalities or imply that a weight belongs to one category.
+These are **not AXM roots**. They describe the direction of an experience so
+later analysis can ask where growth came from.
+
+The AXM roots are Truth, Agency, Continuity, and Wisdom Before Speed. See
+`ROOTS_AND_CONTINUITY.md`.
+
+The direction labels do not create five hidden personalities or imply that a
+weight belongs to one category.
 
 The brain stores aggregate lifetime counts for these directions. It does not
 need a permanent event-by-event activity log to answer how much experience it
@@ -50,6 +56,9 @@ Comparing two snapshots reports:
 This lets an experiment isolate, for example, what changed during wake use and
 what changed during sleep consolidation.
 
+The Continuity Spine adds a separate behavioral view: whether explicit
+previously demonstrated capabilities still work after those state changes.
+
 ## Truth boundary
 
 Parameter movement is not itself understanding.
@@ -59,10 +68,6 @@ the brain learned a human-readable concept. Semantic claims need behavioral
 probes or controlled causal interventions that demonstrate the claimed
 relationship.
 
-Future analyzers can add fixed probe suites, representation comparisons,
-ablation/patching experiments, forgetting checks, and cross-task transfer
-without changing this boundary.
-
-The purpose is therefore not to make the neural state magically transparent.
-It is to make AXM unusually measurable from birth, so later claims about growth
-can be tied to evidence instead of benchmark mythology or stories.
+The purpose is not to make the neural state magically transparent. It is to
+make AXM unusually measurable from birth, so later claims about growth can be
+tied to evidence instead of benchmark mythology or stories.
