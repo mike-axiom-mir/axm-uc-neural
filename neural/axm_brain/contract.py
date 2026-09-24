@@ -137,6 +137,7 @@ class BoundBrain:
         reward=None,
         source="host",
         tag="",
+        directions=(),
     ):
         from .core import Experience
 
@@ -148,6 +149,7 @@ class BoundBrain:
                 reward=reward,
                 source=source,
                 tag=tag,
+                directions=directions,
             )
         )
 
