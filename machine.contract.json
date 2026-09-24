@@ -1,0 +1,243 @@
+{
+  "name": "AXM Universal Creation",
+  "status": "seed-experimental",
+  "mode": "persistent-running-creation-system",
+  "agentRequired": false,
+  "brainArchitecture": "unspecified-by-design",
+  "globalEndCondition": null,
+  "globalGrowthTarget": null,
+  "globalActivityTarget": null,
+  "roots": [
+    "truth",
+    "agency",
+    "continuity",
+    "wisdom-before-speed"
+  ],
+  "growth": {
+    "isRoot": false,
+    "isBenchmark": false,
+    "isReward": false,
+    "isGlobalTarget": false,
+    "meaning": "possible outcome of real creation and experience exposing capability gaps"
+  },
+  "selfModification": {
+    "allowed": true,
+    "outsideBuilderRequired": false,
+    "rootFitRequiredBeforeContinuingAdoption": true,
+    "currentResultMustRemainInspectable": true
+  },
+  "inspectability": {
+    "machineStructureMustBeNonHidden": true,
+    "externalBlackBoxesMustBeExplicitlyLabeled": true,
+    "actionLogsRequired": false,
+    "promptLogsRequired": false,
+    "chainOfThoughtCaptureRequired": false,
+    "continuousTelemetryRequired": false,
+    "hashBaselineRequired": false
+  },
+  "recovery": {
+    "model": "one-complete-snapshot-per-day",
+    "badCurrentState": "quarantine-and-restore-earlier-snapshot"
+  },
+  "startingCreationLayers": [
+    "atoms",
+    "components",
+    "organs",
+    "capabilities",
+    "creations"
+  ],
+  "standalone": true,
+  "inheritsOldWorkshopArchitectureByDefault": false,
+  "buildHygiene": {
+    "activeMachineCopies": 1,
+    "temporaryWorkspaceCloneRequired": false,
+    "mergeBackWorkflowRequired": false,
+    "editableCandidateBodyCloneAvailable": true,
+    "candidateBodyIsActiveMachine": false,
+    "candidateAdoptionAutomatic": false,
+    "candidateChoosesWhenToRequestMergeCheck": true,
+    "perEditMergeCheckRequired": false,
+    "mergeReadinessScoreRequired": false,
+    "buildOwnsAndRemovesItsDebris": true,
+    "destructiveGlobalCleanIsNormalOperation": false
+  },
+  "directionalOutcomes": {
+    "capabilityGapTargetsOutcomeNotExactPriorSolution": true
+  },
+  "projectVerification": {
+    "symlinkBoundaryChecked": true,
+    "explicitCheckKinds": [
+      "file-exists",
+      "file-absent",
+      "nonempty",
+      "contains",
+      "not-contains",
+      "line-count",
+      "byte-size",
+      "sha256",
+      "json-valid",
+      "json-value",
+      "file-set",
+      "python-compile",
+      "html-local-links",
+      "css-local-links",
+      "javascript-local-imports"
+    ],
+    "staticWebLocalReferencesAutomatic": true,
+    "generatedCodeExecuted": false,
+    "browserBehaviorProven": false
+  },
+  "creationComposition": {
+    "softwareOrganAssemblyAvailable": true,
+    "declaredDependencyGraphResolved": true,
+    "declaredInterfaceProvidersAndRequirementsResolved": true,
+    "exclusiveRenderedFileOwnership": true,
+    "executableOrganPackageBodyAvailable": true,
+    "exactVersionedOrganReferencesResolved": true,
+    "executableOrganV01BackwardCompatible": true,
+    "executableOrganV02FixtureContractAvailable": true,
+    "declaredOrganFixturesRunInDisposableProjectSpace": true,
+    "generatedOrganRuntimeExecutedByFixtureTests": false,
+    "interfaceDrivenOrganDiscoveryAvailable": true,
+    "uniqueSmallestCompleteExactAssemblySelected": true,
+    "ambiguousMinimumAssemblyHeld": true,
+    "missingInterfaceOrganContractEmitted": true,
+    "organDiscoveryMaximumStates": 10000,
+    "suppliedMissingOrganClosureExperimentAvailable": true,
+    "detachedCandidateMayEnterEphemeralLibraryOverlay": true,
+    "ephemeralClosureRequiresCandidateSelectionAndValidatedBuild": true,
+    "closureExperimentInstallsCandidate": false,
+    "organInstanceScopedBindingsAvailable": true,
+    "completeOrganMaterializationCensusAvailable": true,
+    "organStandaloneSourceEqualityChecked": true,
+    "explicitPackageToForgeProposalCompilerAvailable": true,
+    "detachedOrganMaterializeAndTestAvailable": true,
+    "organImplementationSourceInventedAutomatically": false,
+    "organMaterializationAutomaticallyInstalls": false,
+    "descriptiveOrgansAutomaticallyExecutable": false,
+    "sourceInterfaceConformanceProven": false,
+    "semanticRuntimeWiringInvented": false
+  },
+  "assetComposition": {
+    "packageSchema": "axm.asset-atom-package/v0.1",
+    "instanceSchema": "axm.asset-instance/v0.1",
+    "closedAtomKinds": [
+      "animation",
+      "behavior",
+      "collision",
+      "gradient",
+      "lod",
+      "mask",
+      "material",
+      "metadata",
+      "overlay",
+      "palette",
+      "part",
+      "shader",
+      "shape",
+      "socket",
+      "state",
+      "texture"
+    ],
+    "exactPayloadReferenceEdgesRequired": true,
+    "referenceKindValidationAvailable": true,
+    "dependencyCyclesRejected": true,
+    "continuousDistanceLodRequired": true,
+    "exactStateAndAnimationSelectionAvailable": true,
+    "paletteRoleOverridesAvailable": true,
+    "deterministicPackageAndInstanceDigestsAvailable": true,
+    "validatedDescriptorMaterializationAvailable": true,
+    "externalResourceBytesFetchedOrVerified": false,
+    "meshOrTextureRenderingAvailableThroughThisCapability": false,
+    "shaderOrAnimationRuntimeAvailableThroughThisCapability": false,
+    "collisionPhysicsAvailableThroughThisCapability": false
+  },
+  "organGapClosure": {
+    "startsFromObservedMissingInterfaceHold": true,
+    "explicitOrganForgeProposalRequired": true,
+    "proposalAndPackageInterfacesMustExactlyAgree": true,
+    "detachedForgeTestRequired": true,
+    "candidateBytesRehashedAtOverlayBoundary": true,
+    "ephemeralInstalledPlusCandidateDiscoveryAvailable": true,
+    "candidateMustParticipateInReadyClosure": true,
+    "ephemeralValidatedAssemblyBuildRequired": true,
+    "automaticSourceInvention": false,
+    "automaticAdmissionOrInstallation": false,
+    "runtimeBehaviorProven": false
+  },
+  "creationUnitForge": {
+    "detachedCandidateMaterializationAvailable": true,
+    "firstClassKinds": [
+      "hand",
+      "capability",
+      "organ",
+      "protocol",
+      "skill",
+      "specialist",
+      "recipe"
+    ],
+    "openExtensionKindsAllowed": true,
+    "sameProposalRebuildIsPathIndependent": true,
+    "capabilityAndHandDeclaredTestsExecutable": true,
+    "organPackageContractValidationAvailable": true,
+    "organV02DeclaredFixtureTestingAvailable": true,
+    "otherKindRuntimeSemanticsProven": false,
+    "candidateDesignInventedByDeterministicForge": false,
+    "automaticExecution": false,
+    "automaticInstallOrRegistration": false,
+    "automaticAdmissionOrMerge": false,
+    "candidateMayRequestAdmissionReview": true
+  },
+  "gapSynthesis": {
+    "evidenceBoundAnalysisAvailable": true,
+    "exactRequestDigestPreserved": true,
+    "implementedBlueprints": [
+      "axm.blueprint.exact-utf8-file-route-alias/v0.1",
+      "axm.blueprint.bounded-project-recipe-graph/v0.1"
+    ],
+    "existingDetachedCandidateReusePrecedesNewSynthesis": true,
+    "uniqueStructuralBridgeMaySelectDetachedExperiment": true,
+    "structuralBridgeIsSemanticEquivalenceProof": false,
+    "ambiguousBridgeAutoSelected": false,
+    "exactCompositeChainCompilationAvailable": true,
+    "maximumProjectRecipeSteps": 3,
+    "shortestReadyExactPathSelected": true,
+    "recipePathAmbiguityHeld": true,
+    "recipeDepthOverflowHeld": true,
+    "existingVerifiedCompositeReusePrecedesNewEmbodiment": true,
+    "supportedProjectProducerProfiles": [
+      "strict-project-template",
+      "exact-executable-organ-assembly",
+      "interface-discovered-organ-assembly",
+      "exact-project-files",
+      "existing-verified-project-composite"
+    ],
+    "compositeMissingOrAmbiguousLinkHeld": true,
+    "closedCompositeBindingTransforms": [
+      "file-digest-map"
+    ],
+    "closedCompositeBindingEdges": [
+      "file-digest-map",
+      "exact-whole-object"
+    ],
+    "exactVerificationJsonArtifactAvailable": true,
+    "arbitraryCompositeExpressionEvaluationAvailable": false,
+    "unsupportedGapHeld": true,
+    "requestShapedDisposableFixtureAvailable": true,
+    "originalRequestedDestinationUsedDuringExperiment": false,
+    "arbitrarySemanticSourceSynthesisAvailable": false,
+    "automaticAdmissionOrInstallation": false
+  },
+  "hostEmbedding": {
+    "coreIntendedAsInnerBody": true,
+    "hostAdaptersExpected": true,
+    "hostOwnershipRequired": false
+  },
+  "workshop": {
+    "status": "paused",
+    "isFoundation": false,
+    "standaloneCapabilitiesFirst": true,
+    "laterRepairAttemptMayUseProvenExternalCapabilities": true,
+    "repairMustNotEndangerStandaloneMachine": true
+  }
+}

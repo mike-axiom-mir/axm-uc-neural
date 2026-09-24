@@ -1,0 +1,96 @@
+{
+  "id": "AXM-CAP-GENERATE-PROCEDURAL-3D",
+  "version": "0.3.0",
+  "status": "live",
+  "purpose": "Generate bounded deterministic GLB scenes from explicit primitives or supplied surface meshes, including linear vertex colors, with decoded geometry validation, atomic publication, and default retention of the exact supplied construction specification as creator-source authority.",
+  "handles": [
+    "procedural-3d-asset",
+    "procedural-glb-asset",
+    "deterministic-3d-model",
+    "glb-scene-asset"
+  ],
+  "input_contract": {
+    "required": [
+      "path",
+      "specification"
+    ],
+    "properties": {
+      "path": "target .glb file outside the protected live machine body",
+      "specification": "closed axm.procedural-3d/v0.1 primitive scene or axm.surface-3d/v0.1 explicit positions/normals/indices/material groups with optional linear RGBA vertex colors",
+      "replace": "optional boolean; defaults false"
+    }
+  },
+  "output_contract": {
+    "kind": "validated-deterministic-glb-asset",
+    "contains": [
+      "normalized scene specification and digest",
+      "exact GLB byte count and SHA-256",
+      "JSON and BIN chunk validation",
+      "bufferView and accessor range validation",
+      "node, mesh, material, primitive, and triangle counts",
+      "explicit unobserved render and host-import boundaries",
+      "decoded finite positions/normals, index bounds, nondegenerate triangles and winding agreement",
+      "sibling axm.creator-source/v1 sidecar retaining the exact supplied specification by default"
+    ]
+  },
+  "dependencies": [],
+  "relationships": [
+    "originates exact binary 3D assets without requiring caller-supplied base64 bytes",
+    "uses one deterministic glTF scene, node, mesh, material, accessor, bufferView, and buffer grammar",
+    "provides reusable GLB bytes to mixed projects, games, websites, viewers, and portable bundles",
+    "treats the GLB as a realization while the retained specification is source authority for future replay and reshaping"
+  ],
+  "anatomy_refs": [
+    {
+      "id": "AXM-11-3D-SPATIAL-O-001-geometry-generator",
+      "role": "implements",
+      "basis": "Generates closed primitive geometry or encodes caller-supplied bounded surface triangles with normals and optional vertex colors; arbitrary shape intent still needs a source recipe."
+    },
+    {
+      "id": "AXM-11-3D-SPATIAL-O-003-topology-validator",
+      "role": "implements",
+      "basis": "Re-parses emitted references and accessor ranges, decodes positions/normals/indices, and rejects non-finite geometry, out-of-range indices, degenerate triangles and winding/normal disagreement; does not prove manifoldness."
+    },
+    {
+      "id": "AXM-11-3D-SPATIAL-O-004-scene-composer",
+      "role": "implements",
+      "basis": "Composes explicit named nodes, per-primitive transforms, meshes, and materials into one deterministic scene."
+    },
+    {
+      "id": "AXM-11-3D-SPATIAL-O-013-scene-exporter",
+      "role": "implements",
+      "basis": "Emits a complete glTF 2.0 GLB container with JSON and BIN chunks and verifies its exact published bytes."
+    }
+  ],
+  "implementation": {
+    "kind": "DETERMINISTIC_SOURCE",
+    "entrypoint": "builtin:procedural_3d",
+    "source": "src/axm_uc/procedural_3d.py"
+  },
+  "limitations": [
+    "Primitive schema supports boxes, pyramids and cylinders; surface schema accepts supplied triangle meshes. Rotation, animation, skins, cameras, lights, texture UVs, arbitrary GLB import, automatic LOD generation and physics are not implemented.",
+    "Materials use a base color plus metallic/roughness factors and optional linear vertex colors; no texture maps.",
+    "container validation proves exact bounded glTF structure and buffer ranges, not rendered appearance, artistic quality, manifold topology, physical correctness, or compatibility with a particular engine or viewer",
+    "the maximum is 128 primitives and 64 radial segments per cylinder",
+    "Surface input: at most 128 material groups, 65535 vertices per group, 131072 vertices and 131072 triangles overall. Supplied geometry is not independently invented or aesthetically judged."
+  ],
+  "persistent_state": null,
+  "root_fit": {
+    "truth": {
+      "fit": true,
+      "basis": "The normalized primitive grammar, specification digest, exact asset digest, complete structural receipt, and unobserved rendering/import qualities remain explicit."
+    },
+    "agency": {
+      "fit": true,
+      "basis": "The caller chooses every primitive, dimension, translation, material, destination, and replacement decision."
+    },
+    "continuity": {
+      "fit": true,
+      "basis": "Publication is atomic, bounded replacement is recoverable if post-publication verification fails, and no machine state is changed."
+    },
+    "wisdom-before-speed": {
+      "fit": true,
+      "basis": "Strict fields and bounds, glTF chunk structure, references, byte ranges, and exact post-publication bytes are checked before the asset is called validated."
+    }
+  }
+}

@@ -1,0 +1,69 @@
+name: Physics radial-envelope receipt verifier
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "capabilities/physics-core/uc-two-projection-radial-envelope.js"
+      - "capabilities/physics-core/uc-two-projection-radial-envelope-verifier.js"
+      - "capabilities/physics-core/uc-two-projection-radial-envelope-plan-verifier.js"
+      - "capabilities/physics-core/uc-two-projection-radial-envelope-witness.js"
+      - "capabilities/physics-core/uc-two-projection-radial-envelope-witness-verifier.js"
+      - "capabilities/physics-core/uc-two-projection-radial-envelope-active-set.js"
+      - "capabilities/physics-core/uc-two-projection-radial-envelope-active-set-verifier.js"
+      - "capabilities/physics-core/uc-two-projection-radial-envelope-projection-margins.js"
+      - "capabilities/physics-core/uc-two-projection-radial-envelope-projection-margins-verifier.js"
+      - "capabilities/physics-core/radial-envelope-verifier-selftest.js"
+      - "capabilities/physics-core/radial-envelope-plan-verifier-selftest.js"
+      - "capabilities/physics-core/radial-envelope-witness-selftest.js"
+      - "capabilities/physics-core/radial-envelope-witness-verifier-selftest.js"
+      - "capabilities/physics-core/radial-envelope-active-set-selftest.js"
+      - "capabilities/physics-core/radial-envelope-active-set-verifier-selftest.js"
+      - "capabilities/physics-core/radial-envelope-projection-margins-selftest.js"
+      - "capabilities/physics-core/radial-envelope-projection-margins-verifier-selftest.js"
+      - "capabilities/physics-core/radial-envelope-classification-matrix-selftest.js"
+      - "capabilities/physics-core/radial-envelope-representation-invariance-selftest.js"
+      - "capabilities/physics-core/radial-envelope-scale-covariance-selftest.js"
+      - "capabilities/physics-core/radial-envelope-interval-inclusion-selftest.js"
+      - "capabilities/physics-core/radial-envelope-direction-scale-invariance-selftest.js"
+      - ".github/workflows/physics-radial-envelope-verifier.yml"
+  workflow_dispatch:
+
+jobs:
+  radial-envelope-receipt-verifier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR state
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify optimized radial-envelope receipts against generic boundary evidence
+        run: node capabilities/physics-core/radial-envelope-verifier-selftest.js
+      - name: Verify radial-envelope optimization plan receipts
+        run: node capabilities/physics-core/radial-envelope-plan-verifier-selftest.js
+      - name: Verify deterministic radial-envelope extremum witnesses
+        run: node capabilities/physics-core/radial-envelope-witness-selftest.js
+      - name: Independently verify radial-envelope extremum witness receipts
+        run: node capabilities/physics-core/radial-envelope-witness-verifier-selftest.js
+      - name: Derive radial-envelope extremum active projection sets
+        run: node capabilities/physics-core/radial-envelope-active-set-selftest.js
+      - name: Independently verify radial-envelope active-set receipts
+        run: node capabilities/physics-core/radial-envelope-active-set-verifier-selftest.js
+      - name: Derive radial-envelope extremum projection margins
+        run: node capabilities/physics-core/radial-envelope-projection-margins-selftest.js
+      - name: Independently verify radial-envelope projection-margin receipts
+        run: node capabilities/physics-core/radial-envelope-projection-margins-verifier-selftest.js
+      - name: Verify radial-envelope classification matrix
+        run: node capabilities/physics-core/radial-envelope-classification-matrix-selftest.js
+      - name: Verify radial-envelope representation invariance
+        run: node capabilities/physics-core/radial-envelope-representation-invariance-selftest.js
+      - name: Verify radial-envelope positive-scale covariance
+        run: node capabilities/physics-core/radial-envelope-scale-covariance-selftest.js
+      - name: Verify radial-envelope interval inclusion monotonicity
+        run: node capabilities/physics-core/radial-envelope-interval-inclusion-selftest.js
+      - name: Verify radial-envelope positive direction-scale representation invariance
+        run: node capabilities/physics-core/radial-envelope-direction-scale-invariance-selftest.js

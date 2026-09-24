@@ -1,0 +1,30 @@
+{
+  "id": "AXM-CAP-BAKE-MESH-MAPS",
+  "version": "0.2.0",
+  "status": "live",
+  "purpose": "Mesh-derived AO and optional selected-to-active tangent normal transfer with mip-safe UV-padding preflight",
+  "handles": [
+    "bake-mesh-maps"
+  ],
+  "input_contract": {
+    "required": [
+      "path",
+      "specification"
+    ]
+  },
+  "output_contract": {
+    "kind": "mesh-production-artifact-or-measurement"
+  },
+  "dependencies": [],
+  "implementation": {
+    "kind": "DETERMINISTIC_SOURCE",
+    "entrypoint": "builtin:bake_mesh_maps",
+    "source": "src/axm_uc/mesh_production.py"
+  },
+  "limitations": [
+    "Runtime backend: Blender 4.3+ Cycles CPU. Explicit local installation; no automatic downloads.",
+    "Bake preflight requires unique UVs and enough measured padding to retain at least one pixel after the first 2x mip reduction; deeper safe levels are conservatively reported, not universally guaranteed.",
+    "This does not prove target-engine sampler behavior, anisotropic filtering, compression behavior or every possible mip level.",
+    "Bounded technical evidence only. No automatic product or artistic acceptance."
+  ]
+}

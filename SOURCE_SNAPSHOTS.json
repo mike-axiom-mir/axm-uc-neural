@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "created_for": "axm-uc-neural clean baseline",
+  "upper_layer": {
+    "name": "AXM Universal Creation",
+    "repository": "mike-axiom-mir/axm-universal-creation",
+    "commit": "08cd56220b927ff03432122c4470031597f9f697",
+    "placement": "/",
+    "tracked_files": 3980
+  },
+  "lower_layer": {
+    "name": "WALDO AXM/Mirror research fork",
+    "repository": "mike-axiom-mir/waldo-axm-mirror-research",
+    "commit": "bc6bfe6cb85f27ff6cbbb4577542ed3bfc764fb7",
+    "placement": "neural/waldo/",
+    "tracked_files": 339,
+    "learned_state_imported": false
+  }
+}

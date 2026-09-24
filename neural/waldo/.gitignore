@@ -1,0 +1,6 @@
+/waldo
+/waldo-*
+__pycache__/
+bin/waldo
+.gitignore
+.gitignore
