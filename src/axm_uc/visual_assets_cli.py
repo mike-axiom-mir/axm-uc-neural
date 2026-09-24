@@ -1,0 +1,527 @@
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+from .asset_geometry import review_static_glb
+from .visual_assets import catalog as base_catalog, generate_asset, generate_kit
+from .visual_creation_grammar import compile_visual_recipe, grammar_catalog
+from .visual_expanded import expansion_catalog, generate_expanded_asset, generate_expansion_kit
+from .visual_state_prompt_atlas import compile_visual_state, visual_state_catalog
+from .visual_learning import compile_adaptive_visual_recipe, inspect_png, inspect_visual_learning, record_visual_use
+from .visual_3d import (
+    assess_3d_output,
+    catalog_3d,
+    compile_3d_request,
+    compile_adaptive_3d_request,
+    forge_3d_asset,
+    inspect_glb,
+    provision_blender,
+    record_3d_review,
+    find_blender,
+)
+from .visual_3d_iteration import (
+    forge_3d_iteration, inspect_3d_iteration, plan_3d_iteration,
+    reject_3d_iteration, review_3d_iteration, start_3d_iteration,
+)
+from .rigged_characters import character_catalog, forge_rigged_character, inspect_rigged_character
+from .game_material_styles import (FAMILIES, FINISHES, WearLayer, game_material_catalog,
+                                   generate_game_material, protected_regions_mask)
+from .game_form_styles import FORM_STYLES, game_form_catalog, publish_game_form
+from .game_render_styles import RENDER_STYLES, game_render_style_catalog, publish_game_render_style
+from .game_character_expression import (EXPRESSIONS, STANCES, game_character_expression_catalog,
+                                        publish_character_expression)
+from .game_motion_timing import PROFILES as MOTION_PROFILES, game_motion_timing_catalog, publish_game_motion
+from .game_secondary_motion import game_secondary_motion_catalog, publish_secondary_motion
+from .game_runtime_realization import game_runtime_realization_catalog, publish_game_runtime_realization
+from .game_showcase_contract import game_showcase_catalog, publish_game_showcase
+from .game_functional_motion import game_functional_motion_catalog, publish_game_functional_motion
+from .game_animation_runtime import game_animation_runtime_catalog, publish_game_animation_replay
+from .game_pose_runtime import game_pose_runtime_catalog, publish_game_pose
+from .rigid_vehicle_motion import rigid_vehicle_motion_catalog, publish_rigid_vehicle_motion
+from .software_glb_preview import (LIGHTING_PROFILES, software_glb_preview_catalog,
+                                   publish_glb_preview)
+from .vehicle_art_direction import (vehicle_art_direction_catalog,
+                                    publish_vehicle_art_direction)
+from .studio_compositor import studio_compositor_catalog, publish_studio_project, edit_studio_layers
+
+BASE_CATEGORIES = ["texture", "gradient", "material", "fixture", "decal", "palette"]
+EXPANDED_CATEGORIES = ["surface", "pigment", "sprite", "mesh", "vector-part"]
+
+
+def combined_catalog() -> dict:
+    base = base_catalog()
+    expanded = expansion_catalog()
+    outputs = dict(base.get("outputs", {}))
+    outputs.update(expanded.get("outputs", {}))
+    return {
+        "schema": "axm.procedural-visual-assets.combined/v0.2",
+        "truth_status": "EXECUTABLE_GENERATOR_CATALOG",
+        "deterministic": True,
+        "dependencies": [],
+        "outputs": outputs,
+        "visual_grammar": grammar_catalog(),
+        "visual_state_atlas": visual_state_catalog(),
+        "three_d_forge": catalog_3d(),
+        "rigged_characters": character_catalog(),
+        "game_materials": game_material_catalog(),
+        "game_forms": game_form_catalog(),
+        "game_render_styles": game_render_style_catalog(),
+        "game_character_expressions": game_character_expression_catalog(),
+        "game_motion_timing": game_motion_timing_catalog(),
+        "game_secondary_motion": game_secondary_motion_catalog(),
+        "game_runtime_realization": game_runtime_realization_catalog(),
+        "game_showcase": game_showcase_catalog(),
+        "game_functional_motion": game_functional_motion_catalog(),
+        "game_animation_runtime": game_animation_runtime_catalog(),
+        "game_pose_runtime": game_pose_runtime_catalog(),
+        "rigid_vehicle_motion": rigid_vehicle_motion_catalog(),
+        "software_glb_preview": software_glb_preview_catalog(),
+        "vehicle_art_direction": vehicle_art_direction_catalog(),
+        "studio_compositor": studio_compositor_catalog(),
+    }
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="axm-assets", description="AXM deterministic procedural visual asset forge")
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("catalog", help="show every executable generator family")
+    sub.add_parser("grammar-catalog", help="show the composable visual-intent grammar")
+    sub.add_parser("game-material-catalog", help="show material families and opt-in surface finishes")
+    sub.add_parser("game-form-catalog", help="show deterministic silhouette and proportion styles")
+    sub.add_parser("game-render-catalog", help="show portable baked graphic and painterly styles")
+    sub.add_parser("character-expression-catalog", help="show static face expressions and storytelling stances")
+    sub.add_parser("motion-timing-catalog", help="show deterministic anticipation, impact and settle profiles")
+    sub.add_parser("secondary-motion-catalog", help="show reusable inertial follow-through profiles")
+    sub.add_parser("game-realization-catalog", help="show measured LOD, anchor and readability planning")
+    sub.add_parser("game-showcase-catalog", help="show combined animated game-asset evidence requirements")
+    showcase = sub.add_parser("game-showcase-verify", help="bind combined asset evidence into a fail-closed receipt")
+    showcase.add_argument("source", help="JSON combined game-showcase evidence")
+    showcase.add_argument("path", help="new output directory; existing paths are never overwritten")
+    sub.add_parser("functional-motion-catalog", help="show distance-derived wheel and released-prop motion")
+    functional = sub.add_parser("functional-motion-compose", help="author sampled wheel-roll and released-prop tracks")
+    functional.add_argument("request", help="JSON functional-motion request")
+    functional.add_argument("path", help="new output directory; existing paths are never overwritten")
+    sub.add_parser("animation-runtime-catalog", help="show deterministic clip clock and state execution")
+    sub.add_parser("pose-runtime-catalog", help="show offline GLB pose, attachment and skin evaluation")
+    sub.add_parser("vehicle-motion-catalog", help="show explicit rigid vehicle presentation compilation")
+    vehicle = sub.add_parser("vehicle-motion-compose", help="compile vehicle samples into body, corner and wheel traces")
+    vehicle.add_argument("request", help="JSON rigid vehicle motion request")
+    vehicle.add_argument("path", help="new output directory; existing paths are never overwritten")
+    sub.add_parser("vehicle-art-catalog", help="show reusable vehicle palettes, finishes, markings and wear")
+    vehicle_art = sub.add_parser("vehicle-art-compose", help="apply vehicle art direction to one surface mesh")
+    vehicle_art.add_argument("request", help="JSON vehicle art-direction request")
+    vehicle_art.add_argument("mesh", help="JSON axm.surface-3d/v0.1 mesh")
+    vehicle_art.add_argument("path", help="new output directory; existing paths are never overwritten")
+    sub.add_parser("software-glb-preview-catalog", help="show deterministic renderer-independent GLB preview support")
+    preview = sub.add_parser("software-glb-preview", help="render actual GLB geometry and one sampled pose to PNG")
+    preview.add_argument("asset", help="embedded GLB accepted by the offline pose runtime")
+    preview.add_argument("output", help="new PNG path; existing files are never overwritten")
+    preview.add_argument("--clip")
+    preview.add_argument("--time", type=float, default=0.0, dest="time_s")
+    preview.add_argument("--loop", action="store_true")
+    preview.add_argument("--width", type=int, default=640)
+    preview.add_argument("--height", type=int, default=420)
+    preview.add_argument("--yaw", type=float, default=.72)
+    preview.add_argument("--elevation", type=float, default=.38)
+    preview.add_argument("--supersample", type=int, choices=(1, 2), default=2)
+    preview.add_argument("--lighting", choices=sorted(LIGHTING_PROFILES), default="studio")
+    sub.add_parser("studio-compositor-catalog", help="show imported Studio raster tools and runtime requirements")
+    studio = sub.add_parser("studio-compose", help="compose PNG layers using the original Studio donor")
+    studio.add_argument("project", help="editable Studio composition project JSON")
+    studio.add_argument("path", help="new output directory")
+    studio_edit = sub.add_parser("studio-edit", help="add, change, reorder or remove layers and publish a new revision")
+    studio_edit.add_argument("project", help="existing editable Studio project JSON")
+    studio_edit.add_argument("operations", help="JSON array of layer edits")
+    studio_edit.add_argument("path", help="new output directory")
+    pose = sub.add_parser("pose-sample", help="evaluate or blend an actual GLB pose without a renderer")
+    pose.add_argument("asset", help="embedded GLB with LINEAR or STEP TRS animation")
+    pose.add_argument("request", help="JSON clip, time_s and optional loop, blend, vertices")
+    pose.add_argument("path", help="new output directory; existing paths are never overwritten")
+    animation_runtime = sub.add_parser(
+        "animation-runtime-replay", help="execute animation transitions, clocks, events and root motion")
+    animation_runtime.add_argument("request", help="JSON object containing runtime and commands")
+    animation_runtime.add_argument("path", help="new output directory; existing paths are never overwritten")
+    realization = sub.add_parser(
+        "game-realization-plan", help="select useful LODs from measured anchor and screen-space evidence")
+    realization.add_argument("source", help="JSON measured LOD source contract")
+    realization.add_argument("request", help="JSON view and tolerance request")
+    realization.add_argument("path", help="new output directory; existing paths are never overwritten")
+    motion = sub.add_parser("motion-compose", help="compose sampled local transform tracks with timing receipts")
+    motion.add_argument("request", help="JSON motion request with explicit rest/action transform channels")
+    motion.add_argument("path", help="new output directory; existing paths are never overwritten")
+    motion.add_argument("--profile", choices=[item.name for item in MOTION_PROFILES],
+                        default="weighty-salvage")
+    secondary = sub.add_parser(
+        "secondary-motion-compose", help="derive sampled secondary tracks from a composed primary clip")
+    secondary.add_argument("primary", help="JSON axm.game-motion-timing/v0.1 composition")
+    secondary.add_argument("request", help="JSON request with explicit secondary attachments")
+    secondary.add_argument("path", help="new output directory; existing paths are never overwritten")
+    character_expression = sub.add_parser(
+        "character-expression", help="derive a checked static face expression and stance while retaining source")
+    character_expression.add_argument("request", help="JSON object containing mesh and exact component semantics")
+    character_expression.add_argument("path", help="new output directory; existing paths are never overwritten")
+    character_expression.add_argument("--expression", choices=[item.name for item in EXPRESSIONS], default="mischief")
+    character_expression.add_argument("--stance", choices=[item.name for item in STANCES], default="mechanic-ready")
+    render = sub.add_parser("game-render", help="bake a portable GLB lighting style while retaining source")
+    render.add_argument("request", help="JSON object containing exactly one surface mesh")
+    render.add_argument("path", help="new output directory; existing paths are never overwritten")
+    render.add_argument("--style", choices=[style.name for style in RENDER_STYLES],
+                        default="graphic-toon-baked")
+    render.add_argument("--seed", type=int, default=1)
+    render.add_argument("--light", type=float, nargs=3, metavar=("X", "Y", "Z"),
+                        default=(-.45, .82, .35))
+    form = sub.add_parser("game-form", help="derive a styled surface mesh while retaining canonical source")
+    form.add_argument("request", help="JSON object containing mesh and exact per-component part specs")
+    form.add_argument("path", help="new output directory; existing paths are never overwritten")
+    form.add_argument("--style", choices=[style.name for style in FORM_STYLES], default="comic-salvage")
+    form.add_argument("--seed", type=int, default=1)
+    material = sub.add_parser("game-material", help="generate portable PBR maps with a selected game finish")
+    material.add_argument("family", choices=FAMILIES)
+    material.add_argument("path")
+    material.add_argument("--finish", choices=[f.name for f in FINISHES], default="realistic")
+    material.add_argument("--size", type=int, default=128)
+    material.add_argument("--seed", type=int, default=1)
+    material.add_argument("--color", type=int, nargs=3, metavar=("R", "G", "B"))
+    material.add_argument("--layered-wear", type=float, metavar="AMOUNT")
+    material.add_argument("--substrate-color", type=int, nargs=3, metavar=("R", "G", "B"))
+    material.add_argument("--protect", type=float, nargs=4, action="append",
+                          metavar=("X0", "Y0", "X1", "Y1"),
+                          help="normalized authored rectangle; repeat for readable regions")
+    plan = sub.add_parser("plan", help="compile one structured visual request into a deterministic recipe")
+    plan.add_argument("request", help="path to a UTF-8 JSON visual request")
+    state_catalog = sub.add_parser("state-catalog", help="show the source-backed 99-command visual state atlas")
+    state_catalog.add_argument("--include-aliases", action="store_true")
+    state_compile = sub.add_parser(
+        "state-compile",
+        help="compile visual slash-command shorthand into renderer-neutral state",
+    )
+    state_compile.add_argument("request", help="path to a UTF-8 JSON visual state request")
+    adaptive = sub.add_parser("plan-adaptive", help="compile a request with exact-context lessons from prior use")
+    adaptive.add_argument("request", help="path to a UTF-8 JSON visual request")
+    adaptive.add_argument("--state-root", default=".")
+    png = sub.add_parser("inspect-png", help="verify PNG structure and real alpha pixels")
+    png.add_argument("path")
+    learn = sub.add_parser("learn-use", help="record one evidence-bound visual-use observation")
+    learn.add_argument("observation", help="path to a UTF-8 JSON observation")
+    learn.add_argument("--state-root", default=".")
+    learning = sub.add_parser("learning", help="inspect the compact current visual-use profile")
+    learning.add_argument("--state-root", default=".")
+    learning.add_argument("--context")
+    sub.add_parser("3d-catalog", help="show engine-ready 3D forge assets, outputs, and runtime contract")
+    sub.add_parser("character-catalog", help="show portable rigged character adapters")
+    fortress = sub.add_parser("fortress-forge", help="forge original low-poly reactor, articulated turret and assault drone")
+    fortress.add_argument("output")
+    fortress.add_argument("--blender")
+    fortress.add_argument("--kit", choices=["starter", "detail"], default="starter")
+    fortress.add_argument("--timeout-seconds", type=int, default=600)
+    character = sub.add_parser("character-forge", help="build a rigged original AXM character with starter motion clips")
+    character.add_argument("request")
+    character.add_argument("output")
+    character.add_argument("--state-root", default=".")
+    character.add_argument("--blender")
+    character.add_argument("--timeout-seconds", type=int, default=2400)
+    character_check = sub.add_parser("character-inspect", help="inspect GLB skeleton, skin attributes and animation clips")
+    character_check.add_argument("path")
+    runtime_3d = sub.add_parser("3d-runtime", help="provision and verify AXM's pinned portable 3D runtime")
+    runtime_3d.add_argument("--cache-root", help="optional explicit managed runtime cache")
+    plan_3d = sub.add_parser("3d-plan", help="compile a validated engine-ready 3D request")
+    plan_3d.add_argument("request", help="path to a UTF-8 JSON 3D request")
+    adaptive_3d = sub.add_parser("3d-plan-adaptive", help="replay exact-context lessons into a 3D request")
+    adaptive_3d.add_argument("request", help="path to a UTF-8 JSON 3D request")
+    adaptive_3d.add_argument("--state-root", default=".")
+    review_3d = sub.add_parser("3d-review", help="record one artifact-bound 3D render review")
+    review_3d.add_argument("review", help="path to a UTF-8 JSON 3D review")
+    review_3d.add_argument("--state-root", default=".")
+    assess_3d = sub.add_parser("3d-assess", help="apply technical and artifact-bound visual AAA gates")
+    assess_3d.add_argument("receipt")
+    assess_3d.add_argument("manifest")
+    assess_3d.add_argument("--visual-review")
+    inspect_3d = sub.add_parser("inspect-glb", help="decode GLB structure and report meshes, triangles, and materials")
+    inspect_3d.add_argument("path")
+    contract_3d = sub.add_parser("3d-contract-review", help="check actual static GLB triangles against an explicit spatial contract")
+    contract_3d.add_argument("path", help="local GLB; no external buffers are fetched")
+    contract_3d.add_argument("contract", help="path to a static-asset-contract JSON file")
+    forge_3d = sub.add_parser("3d-forge", help="generate LODs, collisions, GLBs, source blend, and render proofs")
+    forge_3d.add_argument("request", help="path to a UTF-8 JSON 3D request")
+    forge_3d.add_argument("output", help="explicit output directory")
+    forge_3d.add_argument("--blender", help="Blender executable; otherwise AXM_BLENDER or PATH")
+    forge_3d.add_argument("--spatial-contract", help="optional explicit static GLB geometry contract")
+    forge_3d.add_argument("--no-runtime-bootstrap", action="store_true", help="fail instead of provisioning the pinned runtime")
+    for operation in ("start", "status", "next", "forge", "review", "reject"):
+        iteration = sub.add_parser(f"3d-iteration-{operation}", help=f"{operation} a persistent staged 3D iteration run")
+        iteration.add_argument("--state-root", default=".", help="machine root containing state and forge tools")
+        iteration.add_argument("spec" if operation == "start" else "run_id")
+        if operation == "forge":
+            iteration.add_argument("--change-summary", required=True)
+            iteration.add_argument("--blender")
+            iteration.add_argument("--no-runtime-bootstrap", action="store_true")
+            iteration.add_argument("--timeout-seconds", type=int, default=1800)
+        elif operation == "review":
+            iteration.add_argument("review", help="JSON with notes, per-view hashes/criteria, and optional lessons")
+        elif operation == "reject":
+            iteration.add_argument("--reason", required=True)
+
+    generate = sub.add_parser("generate", help="generate one real asset, material, pigment, sprite, mesh, or vector part")
+    generate.add_argument("category", choices=BASE_CATEGORIES + EXPANDED_CATEGORIES)
+    generate.add_argument("kind")
+    generate.add_argument("path")
+    generate.add_argument("--seed", type=int, default=0)
+    generate.add_argument("--size", type=int, default=256)
+    generate.add_argument("--scale", type=float, default=1.0)
+    generate.add_argument("--angle", type=float, default=35.0)
+    generate.add_argument("--format", choices=["svg", "obj"])
+    generate.add_argument("--count", type=int, default=7)
+    generate.add_argument("--colors", nargs="+")
+    generate.add_argument("--age", type=float, default=.5)
+    generate.add_argument("--damage", type=float, default=.35)
+    generate.add_argument("--moisture", type=float, default=.25)
+    generate.add_argument("--frame-size", type=int, default=32)
+    generate.add_argument("--frames", type=int, default=4)
+    generate.add_argument("--columns", type=int)
+    generate.add_argument("--replace", action="store_true")
+
+    kit = sub.add_parser("kit", help="generate the original reusable visual asset kit plus provenance manifest")
+    kit.add_argument("path")
+    kit.add_argument("--profile", choices=["starter", "full"], default="starter")
+    kit.add_argument("--seed", type=int, default=0)
+    kit.add_argument("--size", type=int, default=96)
+    kit.add_argument("--replace", action="store_true")
+
+    ex = sub.add_parser("expansion-kit", help="generate smart pigments, surfaces, sprites, meshes, and vector parts as one kit")
+    ex.add_argument("path")
+    ex.add_argument("--profile", choices=["starter", "full"], default="starter")
+    ex.add_argument("--seed", type=int, default=0)
+    ex.add_argument("--size", type=int, default=48)
+    ex.add_argument("--replace", action="store_true")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.command == "catalog":
+        result = combined_catalog()
+    elif args.command == "grammar-catalog":
+        result = grammar_catalog()
+    elif args.command == "game-material-catalog":
+        result = game_material_catalog()
+    elif args.command == "game-form-catalog":
+        result = game_form_catalog()
+    elif args.command == "game-render-catalog":
+        result = game_render_style_catalog()
+    elif args.command == "character-expression-catalog":
+        result = game_character_expression_catalog()
+    elif args.command == "motion-timing-catalog":
+        result = game_motion_timing_catalog()
+    elif args.command == "secondary-motion-catalog":
+        result = game_secondary_motion_catalog()
+    elif args.command == "game-realization-catalog":
+        result = game_runtime_realization_catalog()
+    elif args.command == "game-showcase-catalog":
+        result = game_showcase_catalog()
+    elif args.command == "game-showcase-verify":
+        source = json.loads(Path(args.source).read_text(encoding="utf-8"))
+        result = publish_game_showcase(args.path, source)
+    elif args.command == "functional-motion-catalog":
+        result = game_functional_motion_catalog()
+    elif args.command == "functional-motion-compose":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        result = publish_game_functional_motion(args.path, request)
+    elif args.command == "animation-runtime-catalog":
+        result = game_animation_runtime_catalog()
+    elif args.command == "pose-runtime-catalog":
+        result = game_pose_runtime_catalog()
+    elif args.command == "vehicle-motion-catalog":
+        result = rigid_vehicle_motion_catalog()
+    elif args.command == "vehicle-motion-compose":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        result = publish_rigid_vehicle_motion(args.path, request)
+    elif args.command == "vehicle-art-catalog":
+        result = vehicle_art_direction_catalog()
+    elif args.command == "vehicle-art-compose":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        mesh = json.loads(Path(args.mesh).read_text(encoding="utf-8"))
+        result = publish_vehicle_art_direction(args.path, mesh, request)
+    elif args.command == "software-glb-preview-catalog":
+        result = software_glb_preview_catalog()
+    elif args.command == "software-glb-preview":
+        result = publish_glb_preview(
+            args.asset, args.output, width=args.width, height=args.height,
+            yaw=args.yaw, elevation=args.elevation, clip=args.clip,
+            time_s=args.time_s, loop=args.loop, supersample=args.supersample,
+            lighting=args.lighting,
+        )
+    elif args.command == "studio-compositor-catalog":
+        result = studio_compositor_catalog()
+    elif args.command in ("studio-compose", "studio-edit"):
+        project_path = Path(args.project)
+        with project_path.open("rb") as handle:
+            body = handle.read(1024 * 1024 + 1)
+        if len(body) > 1024 * 1024:
+            parser.error("Studio project exceeds byte bound")
+        project = json.loads(body)
+        if args.command == "studio-edit":
+            with Path(args.operations).open("rb") as handle:
+                edits = handle.read(1024 * 1024 + 1)
+            if len(edits) > 1024 * 1024:
+                parser.error("Studio edits exceed byte bound")
+            project = edit_studio_layers(project, json.loads(edits))
+        result = publish_studio_project(args.path, project, project_path.parent)
+    elif args.command == "pose-sample":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        result = publish_game_pose(args.path, args.asset, request)
+    elif args.command == "animation-runtime-replay":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        if not isinstance(request, dict) or set(request) != {"runtime", "commands"}:
+            parser.error("animation-runtime-replay request must contain exactly runtime and commands")
+        result = publish_game_animation_replay(args.path, request["runtime"], request["commands"])
+    elif args.command == "game-realization-plan":
+        source = json.loads(Path(args.source).read_text(encoding="utf-8"))
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        result = publish_game_runtime_realization(args.path, source, request)
+    elif args.command == "motion-compose":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        result = publish_game_motion(args.path, request, args.profile)
+    elif args.command == "secondary-motion-compose":
+        primary = json.loads(Path(args.primary).read_text(encoding="utf-8"))
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        result = publish_secondary_motion(args.path, primary, request)
+    elif args.command == "character-expression":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        if not isinstance(request, dict) or set(request) != {"mesh", "parts"}:
+            parser.error("character-expression request must contain exactly mesh and parts")
+        result = publish_character_expression(args.path, request["mesh"], request["parts"],
+                                              args.expression, args.stance)
+    elif args.command == "game-render":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        if not isinstance(request, dict) or set(request) != {"mesh"}:
+            parser.error("game-render request must contain exactly mesh")
+        result = publish_game_render_style(args.path, request["mesh"], args.style,
+                                           args.seed, tuple(args.light))
+    elif args.command == "game-form":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        if not isinstance(request, dict) or set(request) != {"mesh", "parts"}:
+            parser.error("game-form request must contain exactly mesh and parts")
+        result = publish_game_form(args.path, request["mesh"], request["parts"], args.style, args.seed)
+    elif args.command == "game-material":
+        layer = None
+        protection = None
+        protection_source = None
+        if args.layered_wear is not None:
+            layer = WearLayer(amount=args.layered_wear,
+                              substrate_rgb=tuple(args.substrate_color or (92, 101, 105)))
+            if args.protect:
+                protection = protected_regions_mask(args.size, args.protect)
+                protection_source = "authored-cli-rectangles"
+        elif args.substrate_color or args.protect:
+            parser.error("--substrate-color/--protect require --layered-wear")
+        result = generate_game_material(args.path, args.family, args.size, args.seed, args.finish, args.color,
+                                        layer, protection, protected_mask_source=protection_source)
+    elif args.command == "plan":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        result = compile_visual_recipe(request)
+    elif args.command == "state-catalog":
+        result = visual_state_catalog(include_aliases=args.include_aliases)
+    elif args.command == "state-compile":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        result = compile_visual_state(request)
+    elif args.command == "plan-adaptive":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        result = compile_adaptive_visual_recipe(args.state_root, request)
+    elif args.command == "inspect-png":
+        result = inspect_png(args.path)
+    elif args.command == "learn-use":
+        observation = json.loads(Path(args.observation).read_text(encoding="utf-8"))
+        result = record_visual_use(args.state_root, observation)
+    elif args.command == "learning":
+        result = inspect_visual_learning(args.state_root, context_key=args.context)
+    elif args.command == "3d-catalog":
+        result = catalog_3d()
+    elif args.command == "character-catalog":
+        result = character_catalog()
+    elif args.command == "fortress-forge":
+        root = Path(__file__).resolve().parents[2]
+        output = Path(args.output).resolve()
+        script = root / "tools" / "blender" / ("axm_fortress_detail.py" if args.kit == "detail" else "axm_fortress_pack.py")
+        subprocess.run([str(find_blender(args.blender)), "--background", "--factory-startup",
+                        "--python-exit-code", "1", "--python", str(script), "--", "--output", str(output)],
+                       check=True, timeout=args.timeout_seconds, stdout=sys.stderr)
+        result = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
+        result["inspections"] = {p.stem: inspect_glb(p) for p in output.glob("*/*.glb")}
+        (output / "verification.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
+    elif args.command == "character-forge":
+        result = forge_rigged_character(args.state_root, json.loads(Path(args.request).read_text(encoding="utf-8")),
+                                       args.output, blender=args.blender, timeout_seconds=args.timeout_seconds)
+    elif args.command == "character-inspect":
+        result = inspect_rigged_character(args.path)
+    elif args.command == "3d-runtime":
+        result = provision_blender(args.cache_root)
+    elif args.command == "3d-plan":
+        result = compile_3d_request(json.loads(Path(args.request).read_text(encoding="utf-8")))
+    elif args.command == "3d-plan-adaptive":
+        result = compile_adaptive_3d_request(args.state_root, json.loads(Path(args.request).read_text(encoding="utf-8")))
+    elif args.command == "3d-review":
+        result = record_3d_review(args.state_root, json.loads(Path(args.review).read_text(encoding="utf-8")))
+    elif args.command == "3d-assess":
+        review = json.loads(Path(args.visual_review).read_text(encoding="utf-8")) if args.visual_review else None
+        result = assess_3d_output(
+            json.loads(Path(args.receipt).read_text(encoding="utf-8")),
+            json.loads(Path(args.manifest).read_text(encoding="utf-8")),
+            review,
+        )
+    elif args.command == "inspect-glb":
+        result = inspect_glb(args.path)
+    elif args.command == "3d-contract-review":
+        result = review_static_glb(args.path, json.loads(Path(args.contract).read_text(encoding="utf-8")))
+    elif args.command == "3d-forge":
+        request = json.loads(Path(args.request).read_text(encoding="utf-8"))
+        result = forge_3d_asset(
+            Path.cwd(), request, args.output, blender=args.blender,
+            auto_provision_runtime=not args.no_runtime_bootstrap,
+            spatial_contract=json.loads(Path(args.spatial_contract).read_text(encoding="utf-8")) if args.spatial_contract else None,
+        )
+    elif args.command == "3d-iteration-start":
+        result = start_3d_iteration(args.state_root, json.loads(Path(args.spec).read_text(encoding="utf-8")))
+    elif args.command == "3d-iteration-status":
+        result = inspect_3d_iteration(args.state_root, args.run_id)
+    elif args.command == "3d-iteration-next":
+        result = plan_3d_iteration(args.state_root, args.run_id)
+    elif args.command == "3d-iteration-forge":
+        result = forge_3d_iteration(args.state_root, args.run_id, change_summary=args.change_summary,
+                                    blender=args.blender, auto_provision_runtime=not args.no_runtime_bootstrap,
+                                    timeout_seconds=args.timeout_seconds)
+    elif args.command == "3d-iteration-review":
+        result = review_3d_iteration(args.state_root, args.run_id, json.loads(Path(args.review).read_text(encoding="utf-8")))
+    elif args.command == "3d-iteration-reject":
+        result = reject_3d_iteration(args.state_root, args.run_id, args.reason)
+    elif args.command == "kit":
+        result = generate_kit(args.path, profile=args.profile, seed=args.seed, size=args.size, replace=args.replace)
+    elif args.command == "expansion-kit":
+        result = generate_expansion_kit(args.path, profile=args.profile, seed=args.seed, size=args.size, replace=args.replace)
+    elif args.category in EXPANDED_CATEGORIES:
+        result = generate_expanded_asset(
+            category=args.category, kind=args.kind, path=args.path, seed=args.seed, size=args.size,
+            scale=args.scale, colors=args.colors, age=args.age, damage=args.damage,
+            moisture=args.moisture, frame_size=args.frame_size, frames=args.frames,
+            columns=args.columns, replace=args.replace,
+        )
+    else:
+        result = generate_asset(
+            category=args.category, kind=args.kind, path=args.path, seed=args.seed,
+            size=args.size, scale=args.scale, angle=args.angle, format=args.format,
+            count=args.count, colors=args.colors, replace=args.replace,
+        )
+    print(json.dumps(result, indent=2, sort_keys=True))
+    if args.command == "3d-contract-review" and result["status"] != "PASS":
+        return 2
+    if args.command == "3d-forge" and result.get("spatial_contract_review", {}).get("status", "PASS") != "PASS":
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

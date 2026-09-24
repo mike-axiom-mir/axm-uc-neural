@@ -1,0 +1,21 @@
+'use strict';
+
+module.exports = {
+  core: require('./source/axm-physics-core.js'),
+  sourceAdapter: require('./source/axm-physics-adapter.js'),
+  fabric: require('./uc-physics-fabric.js'),
+  distanceJoints: require('./uc-distance-joints.js'),
+  distanceLimits: require('./uc-distance-limits.js'),
+  translationMounts: require('./uc-translation-mounts.js'),
+  axisLocks: require('./uc-axis-locks.js'),
+  axisLimits: require('./uc-axis-limits.js'),
+  directionLocks: require('./uc-direction-locks.js'),
+  directionLimits: require('./uc-direction-limits.js'),
+  constraintComposer: require('./uc-constraint-composer.js'),
+  constraintCollisionIsolation: require('./uc-constraint-collision-isolation.js'),
+  constraintActivityGate: require('./uc-constraint-activity-gate.js'),
+  constraintPreflight: require('./uc-constraint-preflight.js'),
+  constraintPreflightGuard: require('./uc-constraint-preflight-guard.js'),
+  orthogonalProjectionPreflight: require('./uc-orthogonal-projection-preflight.js'),
+  orthogonalProjectionPreflightGuard: require('./uc-orthogonal-projection-preflight-guard.js')
+};
