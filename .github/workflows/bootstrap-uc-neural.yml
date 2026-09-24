@@ -34,7 +34,7 @@ jobs:
           git -C "$RUNNER_TEMP/waldo" checkout --quiet "$WALDO_SHA"
 
           # UC is the upper/root software body. Preserve its tracked bytes exactly.
-          rsync -a --delete --exclude='.git' "$RUNNER_TEMP/uc/" ./
+          rsync -a --delete --exclude='.git' --exclude='.github/workflows/***' "$RUNNER_TEMP/uc/" ./
 
           # WALDO is kept intact beneath the neural layer so its training/model
           # contracts and provenance stay coherent. No learned state is imported.
@@ -109,6 +109,9 @@ jobs:
 
           # Byte-compare every tracked source file against the copied snapshot.
           while IFS= read -r f; do
+            case "$f" in
+              .github/workflows/*) continue ;;
+            esac
             cmp -s "$RUNNER_TEMP/uc/$f" "./$f" || {
               echo "UC copy mismatch: $f" >&2
               exit 1
