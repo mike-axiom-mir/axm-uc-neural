@@ -14,6 +14,8 @@ This is not a pretrained model and it is not a WALDO fork. It begins from a dete
 - sleep replay/consolidation and tiny-weight pruning;
 - deterministic, serializable PRNG state;
 - complete inspectable brain snapshots with SHA-256 integrity checking;
+- named software I/O contracts with their own SHA-256 fingerprint;
+- persisted binding between a learned brain snapshot and the exact software signal contract it learned under;
 - no network, shell, tool, or autonomous filesystem authority inside the brain.
 
 The host owns observations, actions, permissions, persistence locations, and what counts as useful feedback.
@@ -37,29 +39,31 @@ birth(seed)
 
 The wake/sleep names are explicit computational phases, not claims about biology or consciousness.
 
-## Minimal use
+## Software contract
+
+The neural matrix should not have to understand UC internals. A host defines a small named contract:
 
 ```python
-from neural.axm_brain import AXMBrain, BrainConfig, Experience
+from neural.axm_brain import BrainIOContract, Channel
 
-brain = AXMBrain(
-    BrainConfig(input_size=8, hidden_size=32, output_size=4, seed=1)
+contract = BrainIOContract(
+    name="my-software-v1",
+    inputs=(
+        Channel("success", 0.0, 1.0),
+        Channel("load", 0.0, 100.0),
+    ),
+    outputs=("reuse", "explore"),
 )
 
-output = brain.experience(
-    Experience(
-        observation=[0.0] * 8,
-        reward=1.0,
-        source="uc",
-        tag="successful-tool-path",
-    )
+brain = contract.new_brain(hidden_size=32, seed=1)
+raw = brain.experience(
+    {"success": 1.0, "load": 20.0},
+    reward=1.0,
 )
-
-brain.sleep()
-snapshot = brain.to_snapshot()
-brain = AXMBrain.from_snapshot(snapshot)
-brain.wake()
+named_output = brain.output_state(raw)
 ```
+
+The contract fingerprint travels with the bound snapshot. Changing channel names, order, ranges, outputs, or the contract identity changes that fingerprint.
 
 ## Truth boundary
 
