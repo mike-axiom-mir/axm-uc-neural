@@ -326,13 +326,26 @@ class UniversalCreationMachine:
             ensure_ascii=False,
             default=str,
         ).encode("utf-8")
+        request_bytes = json.dumps(
+            request,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            default=str,
+        ).encode("utf-8")
+        request_inputs = request.get("inputs")
         observe_uc_experience(
             self.root,
             path_id="machine.trial",
             event="result",
             status="PASS" if passed else "HOLD",
             payload={
-                "request": request,
+                "request_summary": {
+                    "kind": request.get("kind"),
+                    "direction": request.get("direction"),
+                    "input_keys": sorted(request_inputs) if isinstance(request_inputs, dict) else [],
+                },
+                "request_sha256": hashlib.sha256(request_bytes).hexdigest(),
                 "result_summary": {
                     "type": trial["type"],
                     "passed": passed,
