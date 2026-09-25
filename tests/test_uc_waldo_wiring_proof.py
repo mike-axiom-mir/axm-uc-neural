@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from axm_uc.experiment_controls import read_controls, set_control
 from axm_uc.neural_experience_transport import paths as neural_paths, record_uc_experience
 from axm_uc.neural_growth import inspect_model_state, write_growth_comparison
 
@@ -60,6 +61,48 @@ class UCWaldoWiringProofTests(unittest.TestCase):
             self.assertEqual(rows[0]["text"], rows[1]["text"])
             self.assertNotEqual(rows[0]["axm"]["event_id"], rows[1]["axm"]["event_id"])
             self.assertEqual([row["axm"]["sequence"] for row in rows], [1, 2])
+
+    def test_neural_link_enable_starts_at_current_experience_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as machine_tmp:
+            root = Path(machine_tmp)
+            defaults = read_controls(root)
+            self.assertFalse(defaults["neural_link_enabled"])
+            record_uc_experience(
+                root,
+                path_id="machine.direct",
+                event="result",
+                status="RETURNED",
+                payload={"phase": "baseline-1"},
+            )
+            record_uc_experience(
+                root,
+                path_id="machine.direct",
+                event="result",
+                status="RETURNED",
+                payload={"phase": "baseline-2"},
+            )
+            enabled = set_control(root, "neural_link_enabled", True)
+            self.assertTrue(enabled["neural_link_enabled"])
+            self.assertEqual(enabled["neural_link_start_sequence"], 2)
+            record_uc_experience(
+                root,
+                path_id="machine.direct",
+                event="result",
+                status="RETURNED",
+                payload={"phase": "learning-1"},
+            )
+            rows = [
+                json.loads(line)
+                for line in neural_paths(root)["intake"].read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+            after_boundary = [
+                row
+                for row in rows
+                if row.get("axm", {}).get("sequence", 0) > enabled["neural_link_start_sequence"]
+            ]
+            self.assertEqual(len(after_boundary), 1)
+            self.assertIn("learning-1", after_boundary[0]["text"])
 
     def test_neural_growth_diagnostic_requires_real_complete_run(self) -> None:
         with tempfile.TemporaryDirectory() as machine_tmp, tempfile.TemporaryDirectory() as model_tmp:
