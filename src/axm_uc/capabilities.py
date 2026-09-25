@@ -7,6 +7,7 @@ from typing import Any, Callable
 
 from .atomic import atomic_write_json, atomic_write_text
 from .grammar import grammar_inventory
+from .neural_experience import observe_uc_experience
 from .organ_library import ExecutableOrganError, ExecutableOrganLibrary, resolve_organ_assembly
 from .organ_discovery import OrganDiscoveryError, discover_interface_assembly
 from .organ_gap import OrganGapError, explore_missing_organ_closure
@@ -623,6 +624,35 @@ class CapabilityStore:
         return sorted(key for key in CapabilityStore.required_inputs(manifest, inputs) if key not in inputs)
 
     def invoke(self, manifest: dict[str, Any], inputs: dict[str, Any], _seen: set[str] | None = None) -> dict[str, Any]:
+        implementation_kind = str(manifest.get("implementation", {}).get("kind", "unknown")).strip().casefold()
+        path_id = "capability." + implementation_kind
+        evidence = {
+            "capability": manifest.get("id"),
+            "handles": manifest.get("handles", []),
+            "implementation": manifest.get("implementation", {}),
+            "inputs": inputs,
+        }
+        try:
+            result = self._invoke_unobserved(manifest, inputs, _seen)
+        except Exception as exc:
+            observe_uc_experience(
+                self.root,
+                path_id=path_id,
+                event="error",
+                status=type(exc).__name__,
+                payload={**evidence, "error": str(exc)},
+            )
+            raise
+        observe_uc_experience(
+            self.root,
+            path_id=path_id,
+            event="result",
+            status="RETURNED",
+            payload={**evidence, "result": result},
+        )
+        return result
+
+    def _invoke_unobserved(self, manifest: dict[str, Any], inputs: dict[str, Any], _seen: set[str] | None = None) -> dict[str, Any]:
         missing = self.missing_required_inputs(manifest, inputs)
         if missing:
             raise CapabilityError(f"missing required inputs: {', '.join(missing)}")

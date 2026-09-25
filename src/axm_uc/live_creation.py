@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from .neural_experience import observe_uc_experience
+
 LIVE_CREATION_SCHEMA = "axm-live-creation/v0"
 RECEIPT_SCHEMA = "axm-live-creation-receipt/v0"
 MAX_ITERATIONS = 8
@@ -296,7 +298,7 @@ def _repair(
     return applied
 
 
-def run_live_creation(root: Path | str, raw_manifest: dict[str, Any]) -> dict[str, Any]:
+def _run_live_creation_unobserved(root: Path | str, raw_manifest: dict[str, Any]) -> dict[str, Any]:
     root = Path(root).resolve()
     manifest = _validate_manifest(raw_manifest)
     source = _inside(root, manifest["source"], label="source")
@@ -368,6 +370,28 @@ def run_live_creation(root: Path | str, raw_manifest: dict[str, Any]) -> dict[st
     receipt_path.write_text(json.dumps(receipt, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
     receipt["receipt_path"] = receipt_path.relative_to(root).as_posix()
     return receipt
+
+
+def run_live_creation(root: Path | str, raw_manifest: dict[str, Any]) -> dict[str, Any]:
+    try:
+        result = _run_live_creation_unobserved(root, raw_manifest)
+    except Exception as exc:
+        observe_uc_experience(
+            root,
+            path_id="live_creation.run",
+            event="error",
+            status=type(exc).__name__,
+            payload={"manifest": raw_manifest, "error": str(exc)},
+        )
+        raise
+    observe_uc_experience(
+        root,
+        path_id="live_creation.run",
+        event="result",
+        status=str(result.get("status", "RETURNED")),
+        payload={"manifest": raw_manifest, "result": result},
+    )
+    return result
 
 
 def _load_manifest(path: Path) -> dict[str, Any]:
