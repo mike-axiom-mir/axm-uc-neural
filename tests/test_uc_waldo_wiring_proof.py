@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 from axm_uc.experiment_controls import read_controls, set_control
-from axm_uc.provenance_trace import source_scope
+from axm_uc.provenance_trace import request_source_scope
 from axm_uc.neural_experience_transport import paths as neural_paths, record_uc_experience
 from axm_uc.neural_growth import inspect_model_state, write_growth_comparison
 
@@ -161,12 +161,15 @@ class UCWaldoWiringProofTests(unittest.TestCase):
     def test_nested_capability_observation_inherits_source_scope_without_input_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as machine_tmp:
             root = Path(machine_tmp)
-            declared = {
-                "kind": "model_request",
-                "actor": "chatgpt",
-                "interface": "frontend-brain",
+            request = {
+                "prompt": "build a deterministic widget",
+                "axm_source": {
+                    "kind": "model_request",
+                    "actor": "chatgpt",
+                    "interface": "frontend-brain",
+                },
             }
-            with source_scope(declared):
+            with request_source_scope(request):
                 record_uc_experience(
                     root,
                     path_id="capability.deterministic_source",
@@ -178,6 +181,8 @@ class UCWaldoWiringProofTests(unittest.TestCase):
             trace = json.loads(selected["provenance"].read_text(encoding="utf-8").splitlines()[0])
             self.assertEqual(trace["source"]["kind"], "model_request")
             self.assertEqual(trace["source"]["actor"], "chatgpt")
+            self.assertIn("origin_request_sha256", trace["source"])
+            self.assertIn("origin_prompt_sha256", trace["source"])
             self.assertEqual(trace["execution"]["event"], "result")
 
     def test_neural_growth_diagnostic_requires_real_complete_run(self) -> None:
