@@ -139,7 +139,8 @@ function render(s){
   const recent=(u.recent_events||[]).slice().reverse().slice(0,12);
   if(!recent.length)er.append(row('No UC experience yet','WAITING','hold'));
   for(const e of recent){
-    er.append(row((e.path_id||'?')+' · '+(e.event||'?'),e.intake_received?'RECEIVED':'NO INTAKE',e.intake_received?'good':'hold'));
+    const source=e.source_actor||e.source_kind||'unattributed';
+    er.append(row(source+' → '+(e.path_id||'?')+' · '+(e.event||'?'),e.intake_received?'RECEIVED':'NO INTAKE',e.intake_received?'good':'hold'));
   }
 
   $('previewNote').textContent=pm.label||'preview unavailable';
