@@ -108,6 +108,16 @@ def normalize_source_context(value: Any) -> dict[str, Any]:
 
 
 
+def _with_origin_request(source: dict[str, Any], request: dict[str, Any]) -> dict[str, Any]:
+    result = dict(source)
+    result["origin_request_sha256"] = _digest(request)
+    for field in ("prompt", "direction", "purpose"):
+        value = request.get(field)
+        if isinstance(value, str) and value.strip():
+            result[f"origin_{field}_sha256"] = hashlib.sha256(value.encode("utf-8")).hexdigest()
+    return result
+
+
 @contextmanager
 def source_scope(value: Any) -> Iterator[dict[str, Any] | None]:
     """Carry declared source attribution through nested deterministic calls."""
@@ -130,13 +140,31 @@ def current_source_context() -> dict[str, Any] | None:
     value = _CURRENT_SOURCE.get()
     return dict(value) if isinstance(value, dict) else None
 
+@contextmanager
+def request_source_scope(request: Any) -> Iterator[dict[str, Any]]:
+    """Bind one initiating request across all nested machine/capability activity."""
+    if not isinstance(request, dict):
+        normalized = normalize_source_context(None)
+    else:
+        normalized = _with_origin_request(
+            normalize_source_context(request.get("axm_source")),
+            request,
+        )
+    token = _CURRENT_SOURCE.set(normalized)
+    try:
+        yield normalized
+    finally:
+        _CURRENT_SOURCE.reset(token)
+
+
 def source_context_from_payload(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         return normalize_source_context(None)
     for key in ("request", "manifest"):
         value = payload.get(key)
-        if isinstance(value, dict) and "axm_source" in value:
-            return normalize_source_context(value.get("axm_source"))
+        if isinstance(value, dict):
+            explicit = normalize_source_context(value.get("axm_source"))
+            return _with_origin_request(explicit, value)
     if "axm_source" in payload:
         return normalize_source_context(payload.get("axm_source"))
     inherited = current_source_context()
@@ -253,6 +281,7 @@ __all__ = [
     "SOURCE_KINDS",
     "normalize_source_context",
     "source_scope",
+    "request_source_scope",
     "current_source_context",
     "source_context_from_payload",
     "request_summary_from_payload",
