@@ -10,6 +10,8 @@ on:
       - 'src/axm_uc/growth_lane_compat.py'
       - 'src/axm_uc/experiment_controls.py'
       - 'src/axm_uc/provenance_trace.py'
+      - 'protocols/axm-source-context-v1.schema.json'
+      - 'protocols/axm-provenance-trace-v1.schema.json'
       - 'tests/test_uc_waldo_wiring_proof.py'
       - 'tools/run_uc_waldo_wiring_proof.py'
       - 'tools/run_uc_openwaldo_local.py'
@@ -29,6 +31,8 @@ on:
       - 'src/axm_uc/growth_lane_compat.py'
       - 'src/axm_uc/experiment_controls.py'
       - 'src/axm_uc/provenance_trace.py'
+      - 'protocols/axm-source-context-v1.schema.json'
+      - 'protocols/axm-provenance-trace-v1.schema.json'
       - 'tests/test_uc_waldo_wiring_proof.py'
       - 'tools/run_uc_waldo_wiring_proof.py'
       - 'tools/run_uc_openwaldo_local.py'
@@ -64,3 +68,7 @@ jobs:
           for required in ("Neural brain", "UC machine", "Current draft", "Neural learning link"):
               assert required in text, required
           PY
+      - name: Parse portable provenance protocols
+        run: |
+          python -m json.tool protocols/axm-source-context-v1.schema.json > /dev/null
+          python -m json.tool protocols/axm-provenance-trace-v1.schema.json > /dev/null
