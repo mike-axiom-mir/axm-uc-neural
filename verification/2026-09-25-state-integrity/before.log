@@ -1,0 +1,80 @@
+======================================================================
+ERROR: test_incomplete_json_receipt_is_not_growth (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_incomplete_json_receipt_is_not_growth)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/7356affac651/axm-uc-neural/tests/test_neural_growth_evidence.py", line 65, in test_incomplete_json_receipt_is_not_growth
+    self.assertEqual(self.status(before), 'REAL_NEURAL_GROWTH_NOT_PROVEN')
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/7356affac651/axm-uc-neural/tests/test_neural_growth_evidence.py", line 34, in status
+    return write_growth_comparison(self.root, before, inspect_model_state(self.models))['status']
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/7356affac651/axm-uc-neural/src/axm_uc/neural_growth.py", line 18, in inspect_model_state
+    value = json.loads(path.read_text(encoding="utf-8"))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/json/decoder.py", line 354, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+
+======================================================================
+FAIL: test_copied_unchanged_weights_are_not_growth (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_copied_unchanged_weights_are_not_growth)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/7356affac651/axm-uc-neural/tests/test_neural_growth_evidence.py", line 46, in test_copied_unchanged_weights_are_not_growth
+    self.assertEqual(self.status(before), 'REAL_NEURAL_GROWTH_NOT_PROVEN')
+AssertionError: 'REAL_NEURAL_GROWTH_OBSERVED' != 'REAL_NEURAL_GROWTH_NOT_PROVEN'
+- REAL_NEURAL_GROWTH_OBSERVED
+?                     ^^^   ^
++ REAL_NEURAL_GROWTH_NOT_PROVEN
+?                    + ^^^ +  ^
+
+
+======================================================================
+FAIL: test_missing_or_nonboolean_simulation_evidence_is_not_real (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_missing_or_nonboolean_simulation_evidence_is_not_real)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/7356affac651/axm-uc-neural/tests/test_neural_growth_evidence.py", line 40, in test_missing_or_nonboolean_simulation_evidence_is_not_real
+    self.assertEqual(self.status(before), 'REAL_NEURAL_GROWTH_NOT_PROVEN')
+AssertionError: 'REAL_NEURAL_GROWTH_OBSERVED' != 'REAL_NEURAL_GROWTH_NOT_PROVEN'
+- REAL_NEURAL_GROWTH_OBSERVED
+?                     ^^^   ^
++ REAL_NEURAL_GROWTH_NOT_PROVEN
+?                    + ^^^ +  ^
+
+
+======================================================================
+FAIL: test_run_artifact_digest_must_match_observed_file (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_run_artifact_digest_must_match_observed_file)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/7356affac651/axm-uc-neural/tests/test_neural_growth_evidence.py", line 59, in test_run_artifact_digest_must_match_observed_file
+    self.assertEqual(self.status(before), 'REAL_NEURAL_GROWTH_NOT_PROVEN')
+AssertionError: 'REAL_NEURAL_GROWTH_OBSERVED' != 'REAL_NEURAL_GROWTH_NOT_PROVEN'
+- REAL_NEURAL_GROWTH_OBSERVED
+?                     ^^^   ^
++ REAL_NEURAL_GROWTH_NOT_PROVEN
+?                    + ^^^ +  ^
+
+
+======================================================================
+FAIL: test_simulated_changes_cannot_borrow_another_runs_completion (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_simulated_changes_cannot_borrow_another_runs_completion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/7356affac651/axm-uc-neural/tests/test_neural_growth_evidence.py", line 53, in test_simulated_changes_cannot_borrow_another_runs_completion
+    self.assertEqual(self.status(before), 'REAL_NEURAL_GROWTH_NOT_PROVEN')
+AssertionError: 'REAL_NEURAL_GROWTH_OBSERVED' != 'REAL_NEURAL_GROWTH_NOT_PROVEN'
+- REAL_NEURAL_GROWTH_OBSERVED
+?                     ^^^   ^
++ REAL_NEURAL_GROWTH_NOT_PROVEN
+?                    + ^^^ +  ^
+
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.019s
+
+FAILED (failures=4, errors=1)

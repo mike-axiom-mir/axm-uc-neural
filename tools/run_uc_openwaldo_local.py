@@ -227,14 +227,14 @@ def feed_once(
         if not _model_exists(waldo, env, model_name):
             _run([str(waldo), "model", "init", model_name, "--preset", preset], env=env)
 
-        before = inspect_model_state(layout["models"])
+        before = inspect_model_state(layout["models"] / model_name)
         _run([
             str(waldo), "model", "train", model_name, destination,
             "--epochs", "1",
             "--batch-size", str(batch_size),
             "--learning-rate", str(learning_rate),
         ], env=env)
-        after = inspect_model_state(layout["models"])
+        after = inspect_model_state(layout["models"] / model_name)
         growth = write_growth_comparison(ROOT, before, after)
         if growth.get("status") != "REAL_NEURAL_GROWTH_OBSERVED":
             _write_status(layout, {
