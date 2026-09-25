@@ -37,3 +37,27 @@ Live feeder:
 ## Truth boundary
 
 A received UC event is transport evidence, not learning evidence. A successful real OpenWALDO training run is still only evidence of parameter/state change from the supplied UC experience, not evidence that the change is useful. Usefulness is the weekend experiment.
+
+## Visual cockpit
+
+For the beginner-friendly experiment surface, double-click `START_WEEKEND_UC_NEURAL_LAB.cmd`.
+
+That launches:
+
+- the local three-screen browser cockpit;
+- the OpenWALDO feeder in a separate terminal.
+
+The three screens stay separate:
+
+1. **Neural brain** — feeder state, eligible/consumed experience and real-growth evidence.
+2. **UC machine** — experience-path coverage, intake counts, creative-practice state and recent events.
+3. **Current draft** — the exact current creative-practice PNG when an AXM creative-practice cartridge is attached; otherwise the newest existing UC preview image; otherwise an explicitly labelled activity map.
+
+The dashboard never asks UC to make an extra render just for display. Preview refresh therefore does not create a parallel creative workload.
+
+Both experiment toggles default OFF:
+
+- **UC creative mode** is an explicit control flag and also pauses/resumes the latest attached AXM creative-practice session when the default cartridge exists at `state/neural-experiment/creative-practice.sqlite3`.
+- **Neural learning link** starts a clean learning boundary at the current intake sequence when switched ON. Experience observed while it was OFF remains diagnostic evidence and is not secretly trained later.
+
+The dashboard is loopback-only at `127.0.0.1:8765` and uses no external libraries or network services.
