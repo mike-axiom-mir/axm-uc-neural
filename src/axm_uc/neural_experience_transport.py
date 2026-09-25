@@ -59,22 +59,23 @@ def record_uc_experience(root: Path | str, *, path_id: str, event: str, payload:
         "payload": payload,
     }
     text = canonical(experience)
-    event_id = hashlib.sha256(text.encode("utf-8")).hexdigest()
-    known = {
-        str(row.get("axm", {}).get("event_id"))
-        for row in read_jsonl(selected["intake"])
-        if isinstance(row.get("axm"), dict)
-    }
-    received = len(text.encode("utf-8")) <= MAX_RECORD_BYTES
+    encoded = text.encode("utf-8")
+    existing_events = read_jsonl(selected["events"])
+    sequence = len(existing_events) + 1
+    experience_sha256 = hashlib.sha256(encoded).hexdigest()
+    event_id = hashlib.sha256(
+        canonical({"experience_sha256": experience_sha256, "sequence": sequence}).encode("utf-8")
+    ).hexdigest()
+    received = len(encoded) <= MAX_RECORD_BYTES
     intake_status = "VERIFIED_NOOP_OVERSIZE"
-    if received and event_id in known:
-        intake_status = "ALREADY_PRESENT"
-    elif received:
+    if received:
         append_jsonl(selected["intake"], {
             "text": text,
             "axm": {
                 "schema": EXPERIENCE_SCHEMA,
                 "event_id": event_id,
+                "experience_sha256": experience_sha256,
+                "sequence": sequence,
                 "path_id": str(path_id),
                 "event": str(event),
             },
@@ -83,6 +84,8 @@ def record_uc_experience(root: Path | str, *, path_id: str, event: str, payload:
     append_jsonl(selected["events"], {
         "schema": "axm.uc-neural-coverage-event/v1",
         "event_id": event_id,
+        "experience_sha256": experience_sha256,
+        "sequence": sequence,
         "path_id": str(path_id),
         "event": str(event),
         "status": str(status),
