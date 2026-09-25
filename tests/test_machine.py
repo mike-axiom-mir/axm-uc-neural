@@ -37,11 +37,22 @@ class MachineTests(unittest.TestCase):
         self.assertTrue(result["existing_partial_coverage"])
 
     def test_candidate_can_be_tested_and_build_debris_is_cleaned(self):
+        build_parent = ROOT / ".axm-build"
+        def existing_workspaces():
+            return {
+                str(path.relative_to(build_parent)): path.read_bytes() if path.is_file() else None
+                for path in build_parent.rglob("*")
+            } if build_parent.exists() else {}
+        before = existing_workspaces()
         candidate = ROOT / "capabilities/candidates/AXM-CAP-WRITE-MARKDOWN.json"
         result = UniversalCreationMachine(ROOT).test_candidate(candidate)
         self.assertTrue(result["passed"])
         self.assertTrue(result["build_debris_cleaned"])
-        self.assertFalse((ROOT / ".axm-build").exists())
+        # Each candidate owns its workspace, not the shared build parent.
+        # Prove that this call adds no debris and preserves other owners' bytes.
+        self.assertEqual(existing_workspaces(), before)
+        if not before:
+            self.assertFalse(build_parent.exists())
 
 
 if __name__ == "__main__":

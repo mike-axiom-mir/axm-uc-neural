@@ -1,0 +1,20 @@
+test_model_source_context_follows_experience_into_learning_intake (tests.test_uc_waldo_wiring_proof.UCWaldoWiringProofTests.test_model_source_context_follows_experience_into_learning_intake) ... ok
+test_nested_capability_observation_inherits_source_scope_without_input_mutation (tests.test_uc_waldo_wiring_proof.UCWaldoWiringProofTests.test_nested_capability_observation_inherits_source_scope_without_input_mutation) ... ok
+test_neural_growth_diagnostic_requires_real_complete_run (tests.test_uc_waldo_wiring_proof.UCWaldoWiringProofTests.test_neural_growth_diagnostic_requires_real_complete_run) ... ok
+test_neural_link_enable_starts_at_current_experience_boundary (tests.test_uc_waldo_wiring_proof.UCWaldoWiringProofTests.test_neural_link_enable_starts_at_current_experience_boundary) ... ok
+test_repeated_identical_experiences_remain_distinct_occurrences (tests.test_uc_waldo_wiring_proof.UCWaldoWiringProofTests.test_repeated_identical_experiences_remain_distinct_occurrences) ... ok
+test_representative_uc_paths_reach_openwaldo_intake (tests.test_uc_waldo_wiring_proof.UCWaldoWiringProofTests.test_representative_uc_paths_reach_openwaldo_intake) ... ok
+test_copied_unchanged_weights_are_not_growth (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_copied_unchanged_weights_are_not_growth) ... ok
+test_empty_and_missing_artifacts_are_not_growth (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_empty_and_missing_artifacts_are_not_growth) ... ok
+test_explicit_real_run_with_changed_verified_weights_is_observed (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_explicit_real_run_with_changed_verified_weights_is_observed) ... ok
+test_incomplete_json_receipt_is_not_growth (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_incomplete_json_receipt_is_not_growth) ... ok
+test_legacy_aggregate_only_comparison_cannot_claim_growth (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_legacy_aggregate_only_comparison_cannot_claim_growth) ... ok
+test_missing_or_nonboolean_simulation_evidence_is_not_real (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_missing_or_nonboolean_simulation_evidence_is_not_real) ... ok
+test_run_artifact_digest_must_match_observed_file (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_run_artifact_digest_must_match_observed_file) ... ok
+test_simulated_changes_cannot_borrow_another_runs_completion (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_simulated_changes_cannot_borrow_another_runs_completion) ... ok
+test_unrelated_model_cannot_supply_selected_model_growth (tests.test_neural_growth_evidence.GrowthEvidenceTests.test_unrelated_model_cannot_supply_selected_model_growth) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.869s
+
+OK

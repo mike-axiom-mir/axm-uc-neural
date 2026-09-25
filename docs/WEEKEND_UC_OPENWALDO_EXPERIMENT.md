@@ -1,3 +1,5 @@
+> **Local Windows handoff:** before changing the learner runtime, read [CODEX_LOCAL_WALDO_HANDOFF.md](../CODEX_LOCAL_WALDO_HANDOFF.md). Mike already has a working WALMI/OpenWALDO path on this Windows laptop; inspect and reuse that proven route rather than inventing a second training stack.
+
 # Weekend UC + OpenWALDO experiment
 
 This branch is an experiment, not main.

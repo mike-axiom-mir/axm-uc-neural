@@ -1,0 +1,10 @@
+{"seed": 17, "policy": "fixed", "before": 0.12338076151136584, "after": 0.003802047383357329, "counts": {"inside": 256, "overflow": 256, "mixed": 256}}
+{"seed": 17, "policy": "random", "before": 0.12338076151136584, "after": 0.0037867294046146148, "counts": {"inside": 271, "overflow": 255, "mixed": 242}}
+{"seed": 17, "policy": "error_guided", "before": 0.12338076151136584, "after": 0.0037210221420651227, "counts": {"inside": 277, "overflow": 236, "mixed": 255}}
+{"seed": 41, "policy": "fixed", "before": 0.13136181001486136, "after": 0.004366997849258055, "counts": {"inside": 256, "overflow": 256, "mixed": 256}}
+{"seed": 41, "policy": "random", "before": 0.13136181001486136, "after": 0.004260127515633515, "counts": {"inside": 271, "overflow": 255, "mixed": 242}}
+{"seed": 41, "policy": "error_guided", "before": 0.13136181001486136, "after": 0.00416413136528426, "counts": {"inside": 253, "overflow": 218, "mixed": 297}}
+{"seed": 73, "policy": "fixed", "before": 0.1293548828792744, "after": 0.004298461800384479, "counts": {"inside": 256, "overflow": 256, "mixed": 256}}
+{"seed": 73, "policy": "random", "before": 0.1293548828792744, "after": 0.004295676118658582, "counts": {"inside": 271, "overflow": 255, "mixed": 242}}
+{"seed": 73, "policy": "error_guided", "before": 0.1293548828792744, "after": 0.004484385088511743, "counts": {"inside": 268, "overflow": 225, "mixed": 275}}
+{"fixed": 0.004155835677666621, "random": 0.004114177679635571, "error_guided": 0.004123179531953709}

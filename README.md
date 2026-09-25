@@ -477,3 +477,8 @@ Current AXM-owned machine/workshop code: **PolyForm Noncommercial 1.0.0 + `CREAT
 Commercial Creator Output is allowed; commercial exploitation of the AXM creation machine itself requires separate permission.
 
 Earlier published versions keep any historical licenses already granted to those versions. Third-party material remains under its own terms. See `LICENSE`, `LICENSE_BOUNDARY.md`, and `CREATOR_OUTPUT_PERMISSION.md`.
+
+## UC simulation learning experiment
+
+See [UC simulation lab](docs/UC_SIMULATION_LAB.md) for a bounded, resumable AXM
+learner driven by UC canvas-fit experience, and the [research direction](research/UC_SIMULATION_EXPERIENCE_BRIDGE.md).
