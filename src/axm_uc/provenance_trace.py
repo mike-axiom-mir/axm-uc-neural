@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Any, Iterator
 
 SOURCE_SCHEMA = "axm.source-context/v1"
 TRACE_SCHEMA = "axm.provenance-trace/v1"
+
+_CURRENT_SOURCE: ContextVar[dict[str, Any] | None] = ContextVar("axm_current_source_context", default=None)
 
 SOURCE_KINDS = {
     "human_prompt",
@@ -103,6 +107,29 @@ def normalize_source_context(value: Any) -> dict[str, Any]:
     return result
 
 
+
+@contextmanager
+def source_scope(value: Any) -> Iterator[dict[str, Any] | None]:
+    """Carry declared source attribution through nested deterministic calls."""
+    if value is None:
+        token = _CURRENT_SOURCE.set(_CURRENT_SOURCE.get())
+        try:
+            yield _CURRENT_SOURCE.get()
+        finally:
+            _CURRENT_SOURCE.reset(token)
+        return
+    normalized = normalize_source_context(value)
+    token = _CURRENT_SOURCE.set(normalized)
+    try:
+        yield normalized
+    finally:
+        _CURRENT_SOURCE.reset(token)
+
+
+def current_source_context() -> dict[str, Any] | None:
+    value = _CURRENT_SOURCE.get()
+    return dict(value) if isinstance(value, dict) else None
+
 def source_context_from_payload(payload: Any) -> dict[str, Any]:
     if not isinstance(payload, dict):
         return normalize_source_context(None)
@@ -112,6 +139,9 @@ def source_context_from_payload(payload: Any) -> dict[str, Any]:
             return normalize_source_context(value.get("axm_source"))
     if "axm_source" in payload:
         return normalize_source_context(payload.get("axm_source"))
+    inherited = current_source_context()
+    if inherited is not None:
+        return inherited
     return normalize_source_context(None)
 
 
@@ -222,6 +252,8 @@ __all__ = [
     "TRACE_SCHEMA",
     "SOURCE_KINDS",
     "normalize_source_context",
+    "source_scope",
+    "current_source_context",
     "source_context_from_payload",
     "request_summary_from_payload",
     "stage_for_path",
