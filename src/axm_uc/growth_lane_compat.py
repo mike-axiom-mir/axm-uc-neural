@@ -108,6 +108,7 @@ def _install_machine_creation_contract() -> None:
     from .capabilities import CapabilityError
     from .machine import UniversalCreationMachine
     from .neural_experience import observe_uc_experience
+    from .provenance_trace import source_scope
 
     if getattr(UniversalCreationMachine, "_growth_lane_compat_installed", False):
         return
@@ -191,7 +192,8 @@ def _install_machine_creation_contract() -> None:
                     )
                     return gap
                 try:
-                    result = self.capabilities.invoke(provider_manifest, bridge["inputs"])
+                    with source_scope(request.get("axm_source")):
+                        result = self.capabilities.invoke(provider_manifest, bridge["inputs"])
                 except CapabilityError as exc:
                     error = {
                         "type": "CREATION_ERROR",
@@ -275,6 +277,7 @@ def _install_machine_creation_contract() -> None:
                 )
                 verification = self.create({
                     "kind": "verify-project",
+                    "axm_source": request.get("axm_source"),
                     "direction": f"verify creation trial for {request.get('kind')}",
                     "inputs": {
                         "path": project_path,
@@ -326,6 +329,7 @@ def _install_machine_creation_contract() -> None:
             event="result",
             status="PASS" if passed else "HOLD",
             payload={
+                "axm_source": request.get("axm_source"),
                 "request_summary": {
                     "kind": request.get("kind"),
                     "direction": request.get("direction"),
