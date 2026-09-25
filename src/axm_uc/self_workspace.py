@@ -20,6 +20,7 @@ EXCLUDED_TOP_LEVEL = {
     "snapshots",
 }
 EXCLUDED_ANYWHERE = {"__pycache__", ".pytest_cache"}
+EXCLUDED_RELATIVE_PREFIXES = {("state", "neural-experiment")}
 MERGE_CHECKS = {
     "source-diff",
     "build",
@@ -59,6 +60,9 @@ def _relative_is_included(relative: PurePosixPath) -> bool:
         return False
     if any(part in EXCLUDED_ANYWHERE for part in relative.parts):
         return False
+    for prefix in EXCLUDED_RELATIVE_PREFIXES:
+        if relative.parts[:len(prefix)] == prefix:
+            return False
     return relative.suffix != ".pyc"
 
 
@@ -218,7 +222,7 @@ def clone_self_workspace(root: Path, target: Path, replace: bool = False) -> dic
         "editable": True,
         "independently_testable": True,
         "live_body_modified": False,
-        "excluded_runtime_surfaces": sorted(EXCLUDED_TOP_LEVEL | EXCLUDED_ANYWHERE | {"*.pyc"}),
+        "excluded_runtime_surfaces": sorted(EXCLUDED_TOP_LEVEL | EXCLUDED_ANYWHERE | {"state/neural-experiment", "*.pyc"}),
         "git_history_included": False,
         "os_security_sandbox": False,
         "adoption": "not automatic; inspect and test the candidate body before a separately chosen merge/adoption",
