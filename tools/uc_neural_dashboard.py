@@ -44,9 +44,51 @@ class DashboardState:
     def __init__(self, practice_db: Path | None):
         self.practice_db = practice_db
         self._preview_cache: tuple[float, Path | None] = (0.0, None)
+        self._practice_path_cache: tuple[float, Path | None] = (0.0, None)
+
+    def _resolved_practice_db(self) -> Path | None:
+        if self.practice_db is not None and self.practice_db.is_file():
+            return self.practice_db
+        cached_at, cached = self._practice_path_cache
+        if time.monotonic() - cached_at < 5:
+            return cached
+        newest: tuple[float, Path] | None = None
+        checked = 0
+        for base in (ROOT / "state", ROOT / ".axm", ROOT / "creations"):
+            if not base.is_dir():
+                continue
+            for current, dirs, files in os.walk(base):
+                dirs[:] = [d for d in dirs if d not in {".git", "node_modules", "openwaldo-local", "__pycache__"}]
+                for name in files:
+                    candidate = Path(current) / name
+                    if candidate.suffix.casefold() not in {".db", ".sqlite", ".sqlite3"}:
+                        continue
+                    checked += 1
+                    if checked > 250:
+                        break
+                    try:
+                        connection = sqlite3.connect(f"file:{candidate}?mode=ro", uri=True, timeout=0.2)
+                        try:
+                            app_id = connection.execute("PRAGMA application_id").fetchone()[0]
+                        finally:
+                            connection.close()
+                        if app_id != PRACTICE_APP_ID:
+                            continue
+                        modified = candidate.stat().st_mtime
+                    except (sqlite3.Error, OSError):
+                        continue
+                    if newest is None or modified > newest[0]:
+                        newest = (modified, candidate)
+                if checked > 250:
+                    break
+            if checked > 250:
+                break
+        selected = newest[1] if newest else self.practice_db
+        self._practice_path_cache = (time.monotonic(), selected)
+        return selected
 
     def _practice(self) -> dict[str, Any]:
-        path = self.practice_db
+        path = self._resolved_practice_db()
         if path is None or not path.is_file():
             return {
                 "attached": False,
@@ -192,7 +234,7 @@ class DashboardState:
     def _practice_png(self) -> bytes | None:
         practice = self._practice()
         digest = practice.get("current_png")
-        path = self.practice_db
+        path = self._resolved_practice_db()
         if not practice.get("attached") or not isinstance(digest, str) or path is None:
             return None
         try:
