@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from axm_uc.neural_experience_transport import paths as neural_paths, record_uc_experience
 from axm_uc.neural_growth import inspect_model_state, write_growth_comparison
 
 
@@ -38,6 +39,27 @@ class UCWaldoWiringProofTests(unittest.TestCase):
             self.assertIsInstance(row.get("text"), str)
             decoded = json.loads(row["text"])
             self.assertEqual(decoded["schema"], "axm.uc-neural-experience/v1")
+
+    def test_repeated_identical_experiences_remain_distinct_occurrences(self) -> None:
+        with tempfile.TemporaryDirectory() as machine_tmp:
+            root = Path(machine_tmp)
+            for _ in range(2):
+                record_uc_experience(
+                    root,
+                    path_id="machine.direct",
+                    event="result",
+                    status="RETURNED",
+                    payload={"same": "experience"},
+                )
+            rows = [
+                json.loads(line)
+                for line in neural_paths(root)["intake"].read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[0]["text"], rows[1]["text"])
+            self.assertNotEqual(rows[0]["axm"]["event_id"], rows[1]["axm"]["event_id"])
+            self.assertEqual([row["axm"]["sequence"] for row in rows], [1, 2])
 
     def test_neural_growth_diagnostic_requires_real_complete_run(self) -> None:
         with tempfile.TemporaryDirectory() as machine_tmp, tempfile.TemporaryDirectory() as model_tmp:
