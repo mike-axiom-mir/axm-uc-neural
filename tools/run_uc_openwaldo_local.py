@@ -16,6 +16,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from axm_uc.experiment_controls import read_controls
 from axm_uc.neural_experience_transport import paths as neural_paths, read_jsonl
 from axm_uc.neural_growth import inspect_model_state, write_growth_comparison
 
@@ -118,7 +119,7 @@ def _connection(path: Path) -> sqlite3.Connection:
     return connection
 
 
-def _new_intake_rows(connection: sqlite3.Connection, intake: Path, maximum: int) -> list[dict[str, Any]]:
+def _new_intake_rows(connection: sqlite3.Connection, intake: Path, maximum: int, minimum_sequence: int = 0) -> list[dict[str, Any]]:
     if not intake.is_file():
         return []
     consumed = {row[0] for row in connection.execute("SELECT event_id FROM consumed")}
@@ -126,6 +127,9 @@ def _new_intake_rows(connection: sqlite3.Connection, intake: Path, maximum: int)
     for row in read_jsonl(intake):
         meta = row.get("axm") if isinstance(row.get("axm"), dict) else {}
         event_id = str(meta.get("event_id", ""))
+        sequence = meta.get("sequence")
+        if not isinstance(sequence, int) or isinstance(sequence, bool) or sequence <= minimum_sequence:
+            continue
         if not event_id or event_id in consumed or not isinstance(row.get("text"), str):
             continue
         rows.append(row)
@@ -180,14 +184,26 @@ def feed_once(
     learning_rate: float,
 ) -> bool:
     intake = neural_paths(ROOT)["intake"]
+    controls = read_controls(ROOT)
+    if controls.get("neural_link_enabled") is not True:
+        _write_status(layout, {
+            "schema": "axm.uc-openwaldo-local-loop/v1",
+            "status": "PAUSED_NEURAL_LINK_OFF",
+            "intake": str(intake),
+            "model": model_name,
+            "neural_link_start_sequence": controls.get("neural_link_start_sequence", 0),
+        })
+        return False
+    minimum_sequence = int(controls.get("neural_link_start_sequence", 0))
     with _connection(layout["db"]) as connection:
-        rows = _new_intake_rows(connection, intake, maximum)
+        rows = _new_intake_rows(connection, intake, maximum, minimum_sequence)
         if not rows:
             _write_status(layout, {
                 "schema": "axm.uc-openwaldo-local-loop/v1",
                 "status": "IDLE_NO_NEW_EXPERIENCE",
                 "intake": str(intake),
                 "model": model_name,
+                "neural_link_start_sequence": minimum_sequence,
             })
             return False
 
