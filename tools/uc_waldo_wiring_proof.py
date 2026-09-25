@@ -95,6 +95,18 @@ def emit(root: Path, reset: bool) -> dict:
     trial = machine.trial(request)
     if trial.get("passed") is not True:
         raise RuntimeError("representative UC creation trial did not pass")
+    trial_coverage = refresh_uc_coverage(root)
+    if "machine.trial.result" in trial_coverage.get("missing", []):
+        from axm_uc.neural_experience_transport import paths as neural_paths, read_jsonl
+        trial_events = [
+            row
+            for row in read_jsonl(neural_paths(root)["events"])
+            if row.get("path_id") == "machine.trial"
+        ]
+        raise RuntimeError(
+            "representative UC trial observation missing immediately after trial: "
+            + json.dumps(trial_events, sort_keys=True)
+        )
 
     failure_kind = "__uc_waldo_wiring_proof_error__"
     failure_entrypoint = "uc-neural-wiring-proof-machine-error"
