@@ -142,9 +142,10 @@ experience is retained with a fail-closed attribution state instead.
 ## Nested deterministic calls
 
 The machine establishes a request-scoped source context before invoking a
-capability. Nested aliases, composites and other deterministic capability calls
-inherit that context without inserting extra provenance fields into their input
-schemas.
+capability. That scope carries the declared caller plus SHA-256 identities for
+the originating request and any prompt/direction/purpose text. Nested aliases,
+composites and other deterministic capability calls inherit that context without
+inserting extra provenance fields into their input schemas.
 
 This is important for long-term specialist networks: source identity follows the
 handoff while the specialist tool contract stays clean.
@@ -175,8 +176,10 @@ When the ordinary UC request contains a prompt, the trace records:
 - a digest of the complete request.
 
 The actual request remains in the ordinary UC experience payload where current
-learning already sees it. This avoids creating another unbounded raw-prompt
-memory merely for observability.
+learning already sees it. Nested capability traces inherit the originating
+request/prompt digests, so many internal actions can still be grouped back to
+one initiating prompt without copying the prompt into every event. This avoids
+creating another unbounded raw-prompt memory merely for observability.
 
 ## Handoffs between brains
 
