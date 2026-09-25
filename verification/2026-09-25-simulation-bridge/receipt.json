@@ -1,0 +1,48 @@
+{
+  "schema": "axm.verification/v1",
+  "timestamp_utc": "2026-09-25T21:27:32.202463+00:00",
+  "retained_parents": {
+    "earlier_growth_repair": "17db9d00df85f2fb0815bb5c3c6f82737b6dd7f7",
+    "latest_wiring": "a45360dbed29b812f67bab69a58de8c3eb2fc4a3",
+    "simulation_research": "fbc8b22f48c05c88613a0fb946e698e1a1f32ce5"
+  },
+  "dependencies": {
+    "brain": "a463363ac84543f1a4289830793e9f1a0993e6fe",
+    "network": "0dc91d6b0324fc2dec2173c73b9e3310e945a254"
+  },
+  "python": "3.12.14",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+  "results": {
+    "provider_tests": 4,
+    "integration_tests": 4,
+    "cleanup_regressions": 5,
+    "curriculum_runs": 9,
+    "cli": "new checkpoint, disk restore, resumed 12 episodes, plus fresh pinned dependency installation and 24+3 episodes"
+  },
+  "initial_full_build": {
+    "command": "python tools/build.py",
+    "tests_run": 1310,
+    "failures": 1,
+    "skipped": 5,
+    "failure": "tests.test_machine line 44 assumed the whole shared build directory must be absent; a foreign candidate directory existed.",
+    "repair": "Test now proves own-workspace cleanup and byte-for-byte preservation of existing foreign workspaces, retaining empty-parent assertion when no foreign content existed.",
+    "after_repair": "Five machine/workspace-isolation tests pass. Full final gate to be run by GitHub CI."
+  },
+  "sources": {
+    "src/axm_uc/neural_simulation.py": "e8ecd7441fcded2b6a122a5eb4d8412a2f3b12a82d9164837a416a1c4ce655ab",
+    "src/axm_uc/simulation.py": "df41e086b40d78e72ee2c2d40ccf23a331aea6882abf85e84e04b4bd5fa5cec0",
+    "tests/test_neural_simulation.py": "88b22743933023451da71f9dc898b7d9e8711b036b6d38d6f811abb6caac0573",
+    "integration/test_uc_simulation_learning.py": "93d39d8ad747d552a2d61610ec96ffa9b4b3afbd1380cb662c3a2851dd9fe69d",
+    "tests/test_machine.py": "9d9dc8d9736dff66e813acc63fa951c8f21adef8d60f1a656041159d27091d4a",
+    "tools/run_uc_simulation_lab.py": "dcff931cf7b0a82d3444044ea756b9dce5667694540e0f881ad220d49f565c21",
+    "tools/benchmark_uc_simulation.py": "6bece214b0c0ea223cbd94b58c91d29f246ff2cdcc68c9f4f7401e8162a212ed",
+    ".github/workflows/uc-simulation-learning.yml": "4201c9dd69495c263b4ae748c60d107fb527af59eec4aa7255e33ccb15261420",
+    "RUN_UC_SIMULATION_LAB.cmd": "fde145a55160ea3b1e557f1492357bc411105bbf2e7263f1a3bbb5fca8f6382b"
+  },
+  "limits": [
+    "Local tests are Linux; Windows execution evidence is a separate CI gate.",
+    "No laptop WALMI/OpenWALDO runtime inspection or real WALDO training.",
+    "No million-simulation, learned neural meta-policy, external task or visual-quality claim.",
+    "Error-guided mean held-out error did not beat random; default remains fixed."
+  ]
+}

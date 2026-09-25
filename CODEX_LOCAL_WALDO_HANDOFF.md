@@ -1,7 +1,9 @@
 # Codex Local Handoff — Reuse the Existing WALMI OpenWALDO Route
 
-**Date:** 2026-09-25  
-**Branch:** `codex/uc-waldo-wiring-proof-v1`  
+**Date:** 2026-09-25
+
+**Branch:** `codex/uc-waldo-wiring-proof-v1`
+
 **Purpose:** make the UC/OpenWALDO weekend experiment use the *already proven local WALMI route* instead of inventing a second Windows solution.
 
 ## Important local fact

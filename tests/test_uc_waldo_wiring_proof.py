@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -193,7 +194,11 @@ class UCWaldoWiringProofTests(unittest.TestCase):
             run_dir = model_root / "proof/runs/run-1"
             run_dir.mkdir(parents=True)
             (run_dir / "RUN.json").write_text(
-                json.dumps({"state": "complete", "observation": {"simulated": False}}) + "\n",
+                json.dumps({"state": "complete", "observation": {
+                    "simulated": False,
+                    "artifacts": [{"path": "model.safetensors", "bytes": 19,
+                                   "sha256": hashlib.sha256(b"real-proof-artifact").hexdigest()}],
+                }}) + "\n",
                 encoding="utf-8",
             )
             (run_dir / "model.safetensors").write_bytes(b"real-proof-artifact")

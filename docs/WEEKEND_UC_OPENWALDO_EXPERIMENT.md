@@ -6,9 +6,48 @@ This branch is an experiment, not main.
 
 ## Start
 
-1. Run UC normally in this checkout. Every instrumented UC production/experience boundary writes to `state/neural-experiment/openwaldo-intake.jsonl`.
-2. On Windows, double-click `START_UC_OPENWALDO_EXPERIMENT.cmd`.
-3. Leave that window open while UC produces work.
+Use the `codex/neural-growth-evidence-2026-09-25` branch for the wiring experiment
+plus the growth-evidence repairs in PR #7. These changes are not yet on `main`.
+Keep this experiment in its own checkout; do not replace an existing learned
+WALMI/WALDO state directory with it.
+
+### Training platform check
+
+The nested WALDO source currently rejects native Windows in
+`neural/waldo/internal/training/pytorch.go`. Its real training paths are Linux
+(PyTorch/TorchTitan) and supported Apple Silicon macOS (MLX).
+The `.cmd` files launch processes; they do **not** supply a Windows training
+adapter or automatically enter WSL.
+
+On a Windows laptop, verify the existing locally adapted WALDO installation
+before reusing it, or run this experiment in a configured WSL/Linux environment.
+Keep UC, the feeder and dashboard pointed at the same checkout/state directory.
+Python 3.11+ is required for UC; building the nested CLI requires Go 1.25+ and
+the real training backend requires its own dependencies. WSL installation alone
+does not prove training works. No native-Windows training run has been verified
+for this branch.
+
+### Start the three processes
+
+1. In the selected environment, start the cockpit with
+   `python tools/uc_neural_dashboard.py --open-browser` (use `python3` if needed).
+2. Start the feeder separately with
+   `python tools/run_uc_openwaldo_local.py --watch --backend pytorch` on Linux/WSL,
+   or select the verified backend for the actual host. Use `--waldo PATH` when
+   deliberately selecting an existing compatible binary.
+3. Enable **Neural learning link** before the UC actions you want it to learn
+   from. Both dashboard controls initially default OFF; enabling the link starts
+   at the current intake position and does not train earlier OFF-period events.
+4. Start the actual UC creative/production loop in this checkout. The cockpit
+   and feeder do not start that loop. Enable the creative control if using its
+   attached creative-practice session. Every instrumented UC experience boundary
+   writes to `state/neural-experiment/openwaldo-intake.jsonl`.
+5. Run a small real batch before leaving it unattended. Confirm a completed
+   non-simulated run, verified changed model content, and an advanced consumption
+   ledger. A visible dashboard or growing intake count alone is insufficient.
+
+The Windows wrappers remain convenient launchers only when their selected
+runtime/binary has separately been verified for real training.
 
 The feeder only consumes **new** experience occurrences. Repeated identical experiences remain separate occurrences and may therefore affect training frequency.
 
@@ -19,7 +58,7 @@ The feeder only consumes **new** experience occurrences. Repeated identical expe
 - turns each bounded batch of new UC experience into a separate local OpenWALDO corpus;
 - incrementally trains the same `axm-uc-learner` model, default preset `10m`, on that new batch only;
 - refuses the OpenWALDO `fake` backend;
-- advances the consumption ledger only after a non-simulated completed run plus a changed persisted `model.safetensors` fingerprint proves real neural-state growth.
+- advances the consumption ledger only after an explicitly non-simulated completed run has run-local `model.safetensors` content matching its recorded size/SHA-256 and differing from the previously observed content; copying identical weights into a new directory is not growth.
 
 ## Diagnostics
 
@@ -42,7 +81,8 @@ A received UC event is transport evidence, not learning evidence. A successful r
 
 ## Visual cockpit
 
-For the beginner-friendly experiment surface, double-click `START_WEEKEND_UC_NEURAL_LAB.cmd`.
+The Windows entry surface is `START_WEEKEND_UC_NEURAL_LAB.cmd`; the training
+platform requirements above still apply.
 
 That launches:
 
