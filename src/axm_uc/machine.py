@@ -20,7 +20,7 @@ from .organ_discovery import organ_discovery_summary
 from .organ_gap import organ_gap_summary
 from .organ_materialization import census_organs, organ_materialization_summary
 from .neural_experience import observe_uc_experience
-from .provenance_trace import source_scope
+from .provenance_trace import request_source_scope
 from .registry import Registry
 from .spawn import creation_forge_summary
 
@@ -178,7 +178,7 @@ class UniversalCreationMachine:
 
     def direct(self, request: dict[str, Any]) -> dict[str, Any]:
         """Compile ordinary language into a direction contract and gate routing on sufficiency."""
-        with source_scope(request.get("axm_source")):
+        with request_source_scope(request):
             result = route_direction(self.root, request)
         observe_uc_experience(
             self.root,
@@ -242,7 +242,7 @@ class UniversalCreationMachine:
             )
             return gap
         try:
-            with source_scope(request.get("axm_source")):
+            with request_source_scope(request):
                 result = self.capabilities.invoke(manifest, request.get("inputs", {}))
         except CapabilityError as exc:
             error = {
