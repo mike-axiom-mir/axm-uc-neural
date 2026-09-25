@@ -8,10 +8,15 @@ on:
       - 'src/axm_uc/capabilities.py'
       - 'src/axm_uc/live_creation.py'
       - 'src/axm_uc/growth_lane_compat.py'
+      - 'src/axm_uc/experiment_controls.py'
       - 'tests/test_uc_waldo_wiring_proof.py'
       - 'tools/run_uc_waldo_wiring_proof.py'
       - 'tools/run_uc_openwaldo_local.py'
       - 'START_UC_OPENWALDO_EXPERIMENT.cmd'
+      - 'tools/uc_neural_dashboard.py'
+      - 'tools/uc_neural_dashboard.html'
+      - 'START_UC_NEURAL_DASHBOARD.cmd'
+      - 'START_WEEKEND_UC_NEURAL_LAB.cmd'
       - 'tools/uc_waldo_wiring_proof.py'
       - '.github/workflows/uc-waldo-wiring-proof.yml'
   pull_request:
@@ -21,10 +26,15 @@ on:
       - 'src/axm_uc/capabilities.py'
       - 'src/axm_uc/live_creation.py'
       - 'src/axm_uc/growth_lane_compat.py'
+      - 'src/axm_uc/experiment_controls.py'
       - 'tests/test_uc_waldo_wiring_proof.py'
       - 'tools/run_uc_waldo_wiring_proof.py'
       - 'tools/run_uc_openwaldo_local.py'
       - 'START_UC_OPENWALDO_EXPERIMENT.cmd'
+      - 'tools/uc_neural_dashboard.py'
+      - 'tools/uc_neural_dashboard.html'
+      - 'START_UC_NEURAL_DASHBOARD.cmd'
+      - 'START_WEEKEND_UC_NEURAL_LAB.cmd'
       - 'tools/uc_waldo_wiring_proof.py'
       - '.github/workflows/uc-waldo-wiring-proof.yml'
 
@@ -40,6 +50,15 @@ jobs:
         with:
           python-version: '3.11'
       - name: Compile neural wiring surface
-        run: python -m compileall -q src/axm_uc tools/run_uc_waldo_wiring_proof.py tools/uc_waldo_wiring_proof.py tools/run_uc_openwaldo_local.py tests/test_uc_waldo_wiring_proof.py
+        run: python -m compileall -q src/axm_uc tools/run_uc_waldo_wiring_proof.py tools/uc_waldo_wiring_proof.py tools/run_uc_openwaldo_local.py tools/uc_neural_dashboard.py tests/test_uc_waldo_wiring_proof.py
       - name: Run UC to OpenWALDO wiring proof
         run: PYTHONPATH=src python -m unittest tests.test_uc_waldo_wiring_proof -v
+      - name: Check dashboard entry surface
+        run: |
+          python tools/uc_neural_dashboard.py --help > /dev/null
+          python - <<'PY'
+          from pathlib import Path
+          text = Path("tools/uc_neural_dashboard.html").read_text(encoding="utf-8")
+          for required in ("Neural brain", "UC machine", "Current draft", "Neural learning link"):
+              assert required in text, required
+          PY
