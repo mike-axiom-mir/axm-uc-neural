@@ -154,6 +154,17 @@ Direct low-level calls made outside a machine/source scope remain unattributed.
 A frontend that cares about ancestry must enter through the source contract or
 an equivalent future adapter.
 
+## Portable protocol files
+
+Other brains/runtimes do not need UC's Python implementation to understand the
+wire format:
+
+- `protocols/axm-source-context-v1.schema.json`
+- `protocols/axm-provenance-trace-v1.schema.json`
+
+These are deliberately small JSON contracts suitable for WALMI, a local model
+host, another frontend brain, or a deterministic bridge.
+
 ## Files
 
 The experiment writes three related evidence surfaces:
