@@ -319,12 +319,41 @@ class UniversalCreationMachine:
                 "browser visuals and interactive behavior still require a browser/user/authorized host test",
             ],
         }
+        trial_bytes = json.dumps(
+            trial,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            default=str,
+        ).encode("utf-8")
         observe_uc_experience(
             self.root,
             path_id="machine.trial",
             event="result",
             status="PASS" if passed else "HOLD",
-            payload={"request": request, "result": trial},
+            payload={
+                "request": request,
+                "result_summary": {
+                    "type": trial["type"],
+                    "passed": passed,
+                    "truth_status": trial["truth_status"],
+                    "creation_type": creation.get("type"),
+                    "creation_capability": creation.get("capability"),
+                    "verification_type": (
+                        verification.get("type")
+                        if isinstance(verification, dict)
+                        else None
+                    ),
+                    "verification_passed": (
+                        verification.get("result", {}).get("passed")
+                        if isinstance(verification, dict)
+                        and isinstance(verification.get("result"), dict)
+                        else None
+                    ),
+                },
+                "trial_sha256": hashlib.sha256(trial_bytes).hexdigest(),
+                "full_result_returned_to_host": True,
+            },
         )
         return trial
 
