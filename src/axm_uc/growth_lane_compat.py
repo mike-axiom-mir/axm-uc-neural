@@ -108,7 +108,7 @@ def _install_machine_creation_contract() -> None:
     from .capabilities import CapabilityError
     from .machine import UniversalCreationMachine
     from .neural_experience import observe_uc_experience
-    from .provenance_trace import source_scope
+    from .provenance_trace import request_source_scope
 
     if getattr(UniversalCreationMachine, "_growth_lane_compat_installed", False):
         return
@@ -192,7 +192,7 @@ def _install_machine_creation_contract() -> None:
                     )
                     return gap
                 try:
-                    with source_scope(request.get("axm_source")):
+                    with request_source_scope(request):
                         result = self.capabilities.invoke(provider_manifest, bridge["inputs"])
                 except CapabilityError as exc:
                     error = {
