@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 
 from axm_uc.experiment_controls import read_controls, set_control
+from axm_uc.provenance_trace import source_scope
 from axm_uc.neural_experience_transport import paths as neural_paths, record_uc_experience
 from axm_uc.neural_growth import inspect_model_state, write_growth_comparison
 
@@ -103,6 +104,76 @@ class UCWaldoWiringProofTests(unittest.TestCase):
             ]
             self.assertEqual(len(after_boundary), 1)
             self.assertIn("learning-1", after_boundary[0]["text"])
+
+    def test_model_source_context_follows_experience_into_learning_intake(self) -> None:
+        with tempfile.TemporaryDirectory() as machine_tmp:
+            root = Path(machine_tmp)
+            record_uc_experience(
+                root,
+                path_id="machine.direct",
+                event="result",
+                status="DIRECTION_READY",
+                payload={
+                    "request": {
+                        "prompt": "build a tiny deterministic test",
+                        "axm_source": {
+                            "schema": "axm.source-context/v1",
+                            "kind": "model_request",
+                            "actor": "walmi",
+                            "interface": "axm-machine",
+                            "source_event_id": "walmi-event-17",
+                        },
+                    },
+                    "result": {"type": "DIRECTION_READY"},
+                },
+            )
+            selected = neural_paths(root)
+            intake = [
+                json.loads(line)
+                for line in selected["intake"].read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ][0]
+            event = [
+                json.loads(line)
+                for line in selected["events"].read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ][0]
+            trace = [
+                json.loads(line)
+                for line in selected["provenance"].read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ][0]
+            decoded = json.loads(intake["text"])
+            self.assertEqual(decoded["source_context"]["kind"], "model_request")
+            self.assertEqual(decoded["source_context"]["actor"], "walmi")
+            self.assertEqual(intake["axm"]["source_actor"], "walmi")
+            self.assertEqual(intake["axm"]["trace_id"], event["trace_id"])
+            self.assertEqual(event["trace_id"], trace["trace_id"])
+            self.assertEqual(trace["source"]["source_event_id"], "walmi-event-17")
+            self.assertTrue(trace["source_request"]["prompt_present"])
+            self.assertNotIn("build a tiny deterministic test", json.dumps(trace))
+
+    def test_nested_capability_observation_inherits_source_scope_without_input_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as machine_tmp:
+            root = Path(machine_tmp)
+            declared = {
+                "kind": "model_request",
+                "actor": "chatgpt",
+                "interface": "frontend-brain",
+            }
+            with source_scope(declared):
+                record_uc_experience(
+                    root,
+                    path_id="capability.deterministic_source",
+                    event="result",
+                    status="RETURNED",
+                    payload={"inputs": {"x": 1}, "result": {"y": 2}},
+                )
+            selected = neural_paths(root)
+            trace = json.loads(selected["provenance"].read_text(encoding="utf-8").splitlines()[0])
+            self.assertEqual(trace["source"]["kind"], "model_request")
+            self.assertEqual(trace["source"]["actor"], "chatgpt")
+            self.assertEqual(trace["execution"]["event"], "result")
 
     def test_neural_growth_diagnostic_requires_real_complete_run(self) -> None:
         with tempfile.TemporaryDirectory() as machine_tmp, tempfile.TemporaryDirectory() as model_tmp:
