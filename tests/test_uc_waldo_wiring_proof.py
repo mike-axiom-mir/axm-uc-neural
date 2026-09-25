@@ -59,7 +59,12 @@ class UCWaldoWiringProofTests(unittest.TestCase):
                 if line.strip()
             ]
             self.assertEqual(len(rows), 2)
-            self.assertEqual(rows[0]["text"], rows[1]["text"])
+            first = json.loads(rows[0]["text"])
+            second = json.loads(rows[1]["text"])
+            self.assertEqual(first["payload"], second["payload"])
+            self.assertEqual(first["path_id"], second["path_id"])
+            self.assertEqual(first["event"], second["event"])
+            self.assertNotEqual(first["trace_id"], second["trace_id"])
             self.assertNotEqual(rows[0]["axm"]["event_id"], rows[1]["axm"]["event_id"])
             self.assertEqual([row["axm"]["sequence"] for row in rows], [1, 2])
 
