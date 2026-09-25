@@ -96,7 +96,31 @@ def emit(root: Path, reset: bool) -> dict:
     if trial.get("passed") is not True:
         raise RuntimeError("representative UC creation trial did not pass")
 
-    error = machine.create({"kind": "static-web-project", "inputs": {}})
+    failure_kind = "__uc_waldo_wiring_proof_error__"
+    failure_entrypoint = "uc-neural-wiring-proof-machine-error"
+    failure_manifest = {
+        "id": "AXM-PROOF-MACHINE-ERROR",
+        "handles": [failure_kind],
+        "input_contract": {"required": []},
+        "implementation": {
+            "kind": "DETERMINISTIC_SOURCE",
+            "entrypoint": failure_entrypoint,
+        },
+    }
+    prior_failure_builtin = capabilities_module.BUILTINS.get(failure_entrypoint)
+    original_route = machine.capabilities.route
+    capabilities_module.BUILTINS[failure_entrypoint] = _proof_builtin
+    machine.capabilities.route = (
+        lambda kind: failure_manifest if kind == failure_kind else original_route(kind)
+    )
+    try:
+        error = machine.create({"kind": failure_kind, "inputs": {"fail": True}})
+    finally:
+        machine.capabilities.route = original_route
+        if prior_failure_builtin is None:
+            capabilities_module.BUILTINS.pop(failure_entrypoint, None)
+        else:
+            capabilities_module.BUILTINS[failure_entrypoint] = prior_failure_builtin
     if error.get("type") != "CREATION_ERROR":
         raise RuntimeError("representative UC failure path did not return CREATION_ERROR")
 
