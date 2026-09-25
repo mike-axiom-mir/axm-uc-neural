@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://axiom-mir.local/protocols/axm-provenance-trace-v1.schema.json",
+  "title": "AXM Provenance Trace v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "trace_id",
+    "sequence",
+    "source",
+    "source_request",
+    "interpretation",
+    "execution",
+    "outcome",
+    "learning",
+    "truth"
+  ],
+  "properties": {
+    "schema": {"const": "axm.provenance-trace/v1"},
+    "trace_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sequence": {"type": "integer", "minimum": 1},
+    "source": {"$ref": "axm-source-context-v1.schema.json"},
+    "source_request": {
+      "type": "object",
+      "required": ["request_present"],
+      "properties": {
+        "request_present": {"type": "boolean"},
+        "request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "kind": {"type": ["string", "null"]},
+        "prompt_present": {"type": "boolean"},
+        "direction_present": {"type": "boolean"},
+        "purpose_present": {"type": "boolean"},
+        "prompt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "direction_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "purpose_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "interpretation": {
+      "type": "object",
+      "required": ["stage", "machine_path"],
+      "properties": {
+        "stage": {
+          "enum": [
+            "interpretation",
+            "execution",
+            "verification",
+            "machine_activity"
+          ]
+        },
+        "machine_path": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "required": ["event", "status", "payload_sha256"],
+      "properties": {
+        "event": {"type": "string"},
+        "status": {"type": "string"},
+        "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "outcome": {
+      "type": "object",
+      "required": ["experience_event_id", "experience_sha256"],
+      "properties": {
+        "experience_event_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "experience_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "learning": {
+      "type": "object",
+      "required": ["intake_received", "intake_status", "same_trace_id_carried_to_intake"],
+      "properties": {
+        "intake_received": {"type": "boolean"},
+        "intake_status": {"type": "string"},
+        "same_trace_id_carried_to_intake": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "truth": {
+      "type": "object",
+      "required": [
+        "caller_identity_is_declared_not_inferred",
+        "raw_prompt_is_not_duplicated_into_trace",
+        "trace_does_not_grant_authority",
+        "trace_does_not_claim_learning_usefulness"
+      ],
+      "properties": {
+        "caller_identity_is_declared_not_inferred": {"const": true},
+        "raw_prompt_is_not_duplicated_into_trace": {"const": true},
+        "trace_does_not_grant_authority": {"const": true},
+        "trace_does_not_claim_learning_usefulness": {"const": true}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
