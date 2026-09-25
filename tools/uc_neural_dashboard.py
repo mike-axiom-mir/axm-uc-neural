@@ -202,6 +202,9 @@ class DashboardState:
                 "path_id": row.get("path_id"),
                 "event": row.get("event"),
                 "status": row.get("status"),
+                "source_kind": row.get("source_kind"),
+                "source_actor": row.get("source_actor"),
+                "trace_id": row.get("trace_id"),
                 "intake_received": row.get("intake_received"),
             })
 
