@@ -344,6 +344,7 @@ class UniversalCreationMachine:
             event="result",
             status="PASS" if passed else "HOLD",
             payload={
+                "axm_source": request.get("axm_source"),
                 "request_summary": {
                     "kind": request.get("kind"),
                     "direction": request.get("direction"),
