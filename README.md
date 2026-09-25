@@ -8,4 +8,6 @@ Current research notes:
 
 - [Neural Substrate + Hybrid Architecture Findings](research/NEURAL_SUBSTRATE_HYBRID_FINDINGS.md)
 
+- [UC Simulation Experience Bridge](research/UC_SIMULATION_EXPERIENCE_BRIDGE.md) — makes UC a bounded, source-labeled simulation laboratory whose runs can become direct experience for a persistent neural learner while UC remains independently usable.
+
 The research note preserves the current distinction between deterministic UC capability, human-intent translation, provenance/experience traces, and a neural layer that begins from a reproducible Genesis state and must earn learning claims through behavioral evidence.
