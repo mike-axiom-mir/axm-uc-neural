@@ -324,7 +324,11 @@ def _collect_prior_binary(catalog: list[dict]) -> tuple[dict, list[dict]]:
     maximum_file = 1024 * 1024
     for item in reversed(catalog[-24:]):
         raw = Path(item["path"])
-        target = raw if raw.is_absolute() else ROOT / raw
+        target = (raw if raw.is_absolute() else ROOT / raw).resolve()
+        try:
+            target.relative_to((ROOT / "creations").resolve())
+        except ValueError:
+            continue
         if not target.exists():
             continue
         candidates = [target] if target.is_file() else sorted(
@@ -370,7 +374,12 @@ def _compound_hub(run_dir: Path, rng: random.Random, catalog: list[dict], **ctx)
     binaries, copied = _collect_prior_binary(chosen)
     items = []
     for item in chosen:
-        target = ROOT / item["path"] if not Path(item["path"]).is_absolute() else Path(item["path"])
+        raw = Path(item["path"])
+        target = (raw if raw.is_absolute() else ROOT / raw).resolve()
+        try:
+            target.relative_to((ROOT / "creations").resolve())
+        except ValueError:
+            continue
         rel = os.path.relpath(target, hub).replace(os.sep, "/")
         items.append({"family": item["family"], "path": item["path"], "relative": rel})
     catalog_rows = "".join(
