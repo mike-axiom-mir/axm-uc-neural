@@ -7,6 +7,7 @@ import unittest
 from neural.axm_brain.simulation_session import SimulationSession
 from neural.axm_brain.state import verify_snapshot
 from tools.run_uc_simulation_lab import fresh_session, providers, atomic_write, checkpoint_lock, workflow_route_evaluation
+from tools.run_uc_trajectory_learning import providers as trajectory_providers, _fresh as fresh_trajectory_brain, train_batch
 
 
 class UCDirectSimulationTests(unittest.TestCase):
@@ -60,6 +61,20 @@ class UCDirectSimulationTests(unittest.TestCase):
         session.evaluate()
         self.assertEqual(before,session.to_snapshot())
         self.assertTrue(session.reproduce())
+
+    def test_trajectory_stream_teaches_every_step_without_retaining_raw_replay(self):
+        brain = fresh_trajectory_brain(17)
+        brain.wake()
+        before = brain.to_snapshot()['sha256']
+        provider_map = trajectory_providers()
+        run = train_batch(brain, provider_map, start_episode=0, episodes=4, training_seeds=tuple(range(8)))
+        self.assertEqual(run['episodes_added'], 4)
+        self.assertEqual(run['transitions_added'], 4 * 8)
+        self.assertEqual(brain.host_experience_count, 32)
+        self.assertEqual(brain.reward_update_count, 4)
+        self.assertEqual(brain.replay, [])
+        self.assertNotEqual(before, brain.to_snapshot()['sha256'])
+        self.assertEqual(run['raw_experiences_retained'], 0)
 
     def test_concurrent_writer_is_held_and_checkpoint_is_preserved(self):
         with tempfile.TemporaryDirectory() as directory:
