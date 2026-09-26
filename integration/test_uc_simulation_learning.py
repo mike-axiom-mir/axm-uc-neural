@@ -45,8 +45,10 @@ class UCDirectSimulationTests(unittest.TestCase):
         class Broken:
             def __getattr__(self,key): return getattr(original,key)
             def step(self,state,action): raise ValueError('deliberate provider failure')
-        original = session.providers['overflow']
-        session.providers['overflow'] = Broken()
+        names = list(session.providers)
+        next_name = names[len(session.records) % len(names)]
+        original = session.providers[next_name]
+        session.providers[next_name] = Broken()
         with self.assertRaises(ValueError): session.advance(3)
         self.assertEqual(before,session.to_snapshot())
 
