@@ -1,0 +1,82 @@
+name: UC WALDO wiring proof
+
+on:
+  push:
+    paths:
+      - 'src/axm_uc/neural_*.py'
+      - 'src/axm_uc/machine.py'
+      - 'src/axm_uc/capabilities.py'
+      - 'src/axm_uc/live_creation.py'
+      - 'src/axm_uc/growth_lane_compat.py'
+      - 'src/axm_uc/experiment_controls.py'
+      - 'src/axm_uc/provenance_trace.py'
+      - 'src/axm_uc/self_workspace.py'
+      - 'protocols/axm-source-context-v1.schema.json'
+      - 'protocols/axm-provenance-trace-v1.schema.json'
+      - 'tests/test_uc_waldo_wiring_proof.py'
+      - 'tests/test_neural_growth_evidence.py'
+      - 'tests/test_self_workspace.py'
+      - 'tools/run_uc_waldo_wiring_proof.py'
+      - 'tools/run_uc_openwaldo_local.py'
+      - 'START_UC_OPENWALDO_EXPERIMENT.cmd'
+      - 'tools/uc_neural_dashboard.py'
+      - 'tools/uc_neural_dashboard.html'
+      - 'START_UC_NEURAL_DASHBOARD.cmd'
+      - 'START_WEEKEND_UC_NEURAL_LAB.cmd'
+      - 'tools/uc_waldo_wiring_proof.py'
+      - '.github/workflows/uc-waldo-wiring-proof.yml'
+  pull_request:
+    paths:
+      - 'src/axm_uc/neural_*.py'
+      - 'src/axm_uc/machine.py'
+      - 'src/axm_uc/capabilities.py'
+      - 'src/axm_uc/live_creation.py'
+      - 'src/axm_uc/growth_lane_compat.py'
+      - 'src/axm_uc/experiment_controls.py'
+      - 'src/axm_uc/provenance_trace.py'
+      - 'src/axm_uc/self_workspace.py'
+      - 'protocols/axm-source-context-v1.schema.json'
+      - 'protocols/axm-provenance-trace-v1.schema.json'
+      - 'tests/test_uc_waldo_wiring_proof.py'
+      - 'tests/test_neural_growth_evidence.py'
+      - 'tests/test_self_workspace.py'
+      - 'tools/run_uc_waldo_wiring_proof.py'
+      - 'tools/run_uc_openwaldo_local.py'
+      - 'START_UC_OPENWALDO_EXPERIMENT.cmd'
+      - 'tools/uc_neural_dashboard.py'
+      - 'tools/uc_neural_dashboard.html'
+      - 'START_UC_NEURAL_DASHBOARD.cmd'
+      - 'START_WEEKEND_UC_NEURAL_LAB.cmd'
+      - 'tools/uc_waldo_wiring_proof.py'
+      - '.github/workflows/uc-waldo-wiring-proof.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  wiring-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile neural wiring surface
+        run: python -m compileall -q src/axm_uc tools/run_uc_waldo_wiring_proof.py tools/uc_waldo_wiring_proof.py tools/run_uc_openwaldo_local.py tools/uc_neural_dashboard.py tests/test_uc_waldo_wiring_proof.py tests/test_self_workspace.py
+      - name: Run UC to OpenWALDO wiring proof
+        run: PYTHONPATH=src python -m unittest tests.test_uc_waldo_wiring_proof tests.test_neural_growth_evidence -v
+      - name: Prove telemetry stays outside self-workspace source body
+        run: PYTHONPATH=src python -m unittest tests.test_self_workspace.SelfWorkspaceTests.test_neural_experiment_runtime_telemetry_is_not_part_of_source_body tests.test_self_workspace.SelfWorkspaceTests.test_live_machine_routes_full_source_clone_without_adopting_it -v
+      - name: Check dashboard entry surface
+        run: |
+          python tools/uc_neural_dashboard.py --help > /dev/null
+          python - <<'PY'
+          from pathlib import Path
+          text = Path("tools/uc_neural_dashboard.html").read_text(encoding="utf-8")
+          for required in ("Neural brain", "UC machine", "Current draft", "Neural learning link"):
+              assert required in text, required
+          PY
+      - name: Parse portable provenance protocols
+        run: |
+          python -m json.tool protocols/axm-source-context-v1.schema.json > /dev/null
+          python -m json.tool protocols/axm-provenance-trace-v1.schema.json > /dev/null

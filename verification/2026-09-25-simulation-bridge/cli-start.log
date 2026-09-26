@@ -1,0 +1,78 @@
+{
+  "status": "SAVED",
+  "checkpoint": "/workspace/scratch/7356affac651/neural-growth/uc-cli-proof.json",
+  "bytes": 420986,
+  "total_training_transitions": 384,
+  "policy": "fixed",
+  "episodes_added": 384,
+  "training_transitions_added": 384,
+  "checkpoint_before": "538c3fe373646f337f40bcc78e0ed3e93d81b2556f58e89a1c69484e371e85f6",
+  "checkpoint_after": "06c7104060e269fcf124476023fd41685108692e98d475b7c80ef179069d91a0",
+  "held_out_before": {
+    "families": {
+      "inside": {
+        "mse": 0.08096698854860226,
+        "transitions": 64
+      },
+      "overflow": {
+        "mse": 0.17712797002233138,
+        "transitions": 64
+      },
+      "mixed": {
+        "mse": 0.13599047147365045,
+        "transitions": 64
+      }
+    },
+    "mean_family_mse": 0.13136181001486136,
+    "transitions": 192,
+    "experience_source": "deterministic_simulation"
+  },
+  "held_out_after": {
+    "families": {
+      "inside": {
+        "mse": 0.007544742474350649,
+        "transitions": 64
+      },
+      "overflow": {
+        "mse": 0.0038917154747584643,
+        "transitions": 64
+      },
+      "mixed": {
+        "mse": 0.01209801872854094,
+        "transitions": 64
+      }
+    },
+    "mean_family_mse": 0.007844825559216685,
+    "transitions": 192,
+    "experience_source": "deterministic_simulation"
+  },
+  "held_out_after_restore": {
+    "families": {
+      "inside": {
+        "mse": 0.007544742474350649,
+        "transitions": 64
+      },
+      "overflow": {
+        "mse": 0.0038917154747584643,
+        "transitions": 64
+      },
+      "mixed": {
+        "mse": 0.01209801872854094,
+        "transitions": 64
+      }
+    },
+    "mean_family_mse": 0.007844825559216685,
+    "transitions": 192,
+    "experience_source": "deterministic_simulation"
+  },
+  "restore_exact": true,
+  "family_counts": {
+    "inside": 128,
+    "overflow": 128,
+    "mixed": 128
+  },
+  "training_wall_seconds": 1.627945660999103,
+  "training_cpu_seconds": 1.6279014660000002,
+  "training_transitions_per_second": 235.88010902300724,
+  "evaluation_transitions": 576
+}

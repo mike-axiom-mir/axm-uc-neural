@@ -1,0 +1,966 @@
+{
+  "brain_config": {
+    "eligibility_decay": 0.92,
+    "hidden_size": 16,
+    "input_size": 5,
+    "learning_rate": 0.04,
+    "output_size": 4,
+    "replay_capacity": 32,
+    "reward_baseline_decay": 0.98,
+    "reward_learning_rate": 0.006,
+    "seed": 41,
+    "sleep_learning_scale": 0.35,
+    "sleep_prune_threshold": 0.0001,
+    "sleep_replay_passes": 2,
+    "weight_limit": 3.0
+  },
+  "episodes_per_run": 768,
+  "held_out_seeds": [
+    1000,
+    1001,
+    1002,
+    1003,
+    1004,
+    1005,
+    1006,
+    1007,
+    1008,
+    1009,
+    1010,
+    1011,
+    1012,
+    1013,
+    1014,
+    1015,
+    1016,
+    1017,
+    1018,
+    1019,
+    1020,
+    1021,
+    1022,
+    1023,
+    1024,
+    1025,
+    1026,
+    1027,
+    1028,
+    1029,
+    1030,
+    1031,
+    1032,
+    1033,
+    1034,
+    1035,
+    1036,
+    1037,
+    1038,
+    1039,
+    1040,
+    1041,
+    1042,
+    1043,
+    1044,
+    1045,
+    1046,
+    1047,
+    1048,
+    1049,
+    1050,
+    1051,
+    1052,
+    1053,
+    1054,
+    1055,
+    1056,
+    1057,
+    1058,
+    1059,
+    1060,
+    1061,
+    1062,
+    1063
+  ],
+  "limits": [
+    "All families expose the same UC rectangle-fitting rule with different input distributions.",
+    "error_guided is a moving-error heuristic, not a learned neural meta-selector.",
+    "No external-task, creative-quality, general-intelligence or WALDO-learning claim.",
+    "Equal training transitions; evaluation and timing are separately reported.",
+    "No peak RAM/VRAM or million-simulation measurement."
+  ],
+  "mean_held_out_mse": {
+    "error_guided": 0.004123179531953709,
+    "fixed": 0.004155835677666621,
+    "random": 0.004114177679635571
+  },
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+  "providers": {
+    "inside": {
+      "action_bounds": [
+        -1.0,
+        1.0
+      ],
+      "backend": "python",
+      "capability": "axm_uc.simulation._fit_shape",
+      "capability_source_sha256": "df41e086b40d78e72ee2c2d40ccf23a331aea6882abf85e84e04b4bd5fa5cec0",
+      "experience_source": "deterministic_simulation",
+      "horizon": 1,
+      "observation_size": 5,
+      "parameters": {
+        "action_scale": 0.25,
+        "canvas": [
+          1,
+          1
+        ],
+        "family": "inside"
+      },
+      "schema": "axm.simulation-space/v1",
+      "simulator_id": "axm.uc.canvas-fit",
+      "target_size": 4,
+      "version": "1"
+    },
+    "mixed": {
+      "action_bounds": [
+        -1.0,
+        1.0
+      ],
+      "backend": "python",
+      "capability": "axm_uc.simulation._fit_shape",
+      "capability_source_sha256": "df41e086b40d78e72ee2c2d40ccf23a331aea6882abf85e84e04b4bd5fa5cec0",
+      "experience_source": "deterministic_simulation",
+      "horizon": 1,
+      "observation_size": 5,
+      "parameters": {
+        "action_scale": 0.25,
+        "canvas": [
+          1,
+          1
+        ],
+        "family": "mixed"
+      },
+      "schema": "axm.simulation-space/v1",
+      "simulator_id": "axm.uc.canvas-fit",
+      "target_size": 4,
+      "version": "1"
+    },
+    "overflow": {
+      "action_bounds": [
+        -1.0,
+        1.0
+      ],
+      "backend": "python",
+      "capability": "axm_uc.simulation._fit_shape",
+      "capability_source_sha256": "df41e086b40d78e72ee2c2d40ccf23a331aea6882abf85e84e04b4bd5fa5cec0",
+      "experience_source": "deterministic_simulation",
+      "horizon": 1,
+      "observation_size": 5,
+      "parameters": {
+        "action_scale": 0.25,
+        "canvas": [
+          1,
+          1
+        ],
+        "family": "overflow"
+      },
+      "schema": "axm.simulation-space/v1",
+      "simulator_id": "axm.uc.canvas-fit",
+      "target_size": 4,
+      "version": "1"
+    }
+  },
+  "python": "3.12.14",
+  "rows": [
+    {
+      "after": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.0033492750811937914,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.0060398309425924125,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0020170361262857833,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.003802047383357329,
+        "transitions": 192
+      },
+      "before": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.05617520551494052,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.12112967553319648,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.1928374034859605,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.12338076151136584,
+        "transitions": 192
+      },
+      "brain_seed": 17,
+      "cpu_seconds": 3.55691748,
+      "family_counts": {
+        "inside": 256,
+        "mixed": 256,
+        "overflow": 256
+      },
+      "history_tip": "e095a33a0680f7dcfb23bf56fede6c54dcff102c3bfcff6dea649451807ceb68",
+      "learner_sha256": "944b0a2177f47a428f17785ad986311bc96754a0fa10fb1b8daf0f1c224546ec",
+      "parent_sha256": "76fa7df859a7490a77d15f0fb14ce939af171c143289921ec112a12a514dadca",
+      "policy": "fixed",
+      "restore_exact": true,
+      "retained": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.0033492750811937914,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.0060398309425924125,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0020170361262857833,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.003802047383357329,
+        "transitions": 192
+      },
+      "session_sha256": "5f39b6ebe81beb5a6a0c7c9482645657a2908a39a7c1f93024cad818c023a9e7",
+      "training_transitions": 768,
+      "training_transitions_per_second": 215.9031767900204,
+      "wall_seconds": 3.557150067999828
+    },
+    {
+      "after": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.0033019873487927357,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.0059077646832797715,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0021504361817713366,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.0037867294046146148,
+        "transitions": 192
+      },
+      "before": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.05617520551494052,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.12112967553319648,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.1928374034859605,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.12338076151136584,
+        "transitions": 192
+      },
+      "brain_seed": 17,
+      "cpu_seconds": 3.6133994439999997,
+      "family_counts": {
+        "inside": 271,
+        "mixed": 242,
+        "overflow": 255
+      },
+      "history_tip": "dcae010eacbb00466448d31d7981fa116cb06028355515ffc4fdd0107a6f8bc5",
+      "learner_sha256": "af70381c9d70d9ee6b7f4884701ab624b488bef31f7e03445dd97d62d1c15dcf",
+      "parent_sha256": "76fa7df859a7490a77d15f0fb14ce939af171c143289921ec112a12a514dadca",
+      "policy": "random",
+      "restore_exact": true,
+      "retained": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.0033019873487927357,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.0059077646832797715,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0021504361817713366,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.0037867294046146148,
+        "transitions": 192
+      },
+      "session_sha256": "273264711cc580fe0372f450dbcacb35c44e37491d74296e0f0cc67df7f8b4af",
+      "training_transitions": 768,
+      "training_transitions_per_second": 212.51611506870947,
+      "wall_seconds": 3.6138435889988614
+    },
+    {
+      "after": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.003622876229836929,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.005721904630533009,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0018182855658254295,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.0037210221420651227,
+        "transitions": 192
+      },
+      "before": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.05617520551494052,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.12112967553319648,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.1928374034859605,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.12338076151136584,
+        "transitions": 192
+      },
+      "brain_seed": 17,
+      "cpu_seconds": 3.244798069,
+      "family_counts": {
+        "inside": 277,
+        "mixed": 255,
+        "overflow": 236
+      },
+      "history_tip": "eb637cc5dc885d78a36fcc4fdc73b04fd7b1eea220ebdec481e3ba181b99b1db",
+      "learner_sha256": "60f7122ba9f0757cbd3ecaf8d77550869f1d4de462a1ff597b20bcfc67d4746b",
+      "parent_sha256": "76fa7df859a7490a77d15f0fb14ce939af171c143289921ec112a12a514dadca",
+      "policy": "error_guided",
+      "restore_exact": true,
+      "retained": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.003622876229836929,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.005721904630533009,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0018182855658254295,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.0037210221420651227,
+        "transitions": 192
+      },
+      "session_sha256": "a7b8fe3f55420762c90fc58dad067343f5565ffb1313763607f59a13fc3ff9b6",
+      "training_transitions": 768,
+      "training_transitions_per_second": 236.6696464176314,
+      "wall_seconds": 3.2450295660000847
+    },
+    {
+      "after": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.00355608691855704,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.007893348352763983,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0016515582764531416,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.004366997849258055,
+        "transitions": 192
+      },
+      "before": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.08096698854860226,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.13599047147365045,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.17712797002233138,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.13136181001486136,
+        "transitions": 192
+      },
+      "brain_seed": 41,
+      "cpu_seconds": 3.3694880339999997,
+      "family_counts": {
+        "inside": 256,
+        "mixed": 256,
+        "overflow": 256
+      },
+      "history_tip": "29b3ebbee414e0bb2c322dc58d35e23b988257a9586e74d2dbb6a13a5c7922be",
+      "learner_sha256": "de476a1c3cbf6be3ce3b0726a2021abbfe56724999c71d8f38d8f0de98e45f3f",
+      "parent_sha256": "cab223de8d848aa5b70b48194e5a340af5803fc08ba79f6f4657fc7b9588c89e",
+      "policy": "fixed",
+      "restore_exact": true,
+      "retained": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.00355608691855704,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.007893348352763983,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0016515582764531416,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.004366997849258055,
+        "transitions": 192
+      },
+      "session_sha256": "15d37a0f1caa8a756fc46513f2cc7bb1f2a8168a191916af0118aacb2187e493",
+      "training_transitions": 768,
+      "training_transitions_per_second": 227.91323569959064,
+      "wall_seconds": 3.3697033770004055
+    },
+    {
+      "after": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.0031722251325827706,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.00770875585396259,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0018994015603551841,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.004260127515633515,
+        "transitions": 192
+      },
+      "before": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.08096698854860226,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.13599047147365045,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.17712797002233138,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.13136181001486136,
+        "transitions": 192
+      },
+      "brain_seed": 41,
+      "cpu_seconds": 3.270364182999998,
+      "family_counts": {
+        "inside": 271,
+        "mixed": 242,
+        "overflow": 255
+      },
+      "history_tip": "e7721a3386fa5a3cfd39291967381d908615b95fa8d1421ba3437e9e48ff35c2",
+      "learner_sha256": "5c43c65af3797190c90def5e00dd083262b98c576491ef1c5606b9ffb24003d4",
+      "parent_sha256": "cab223de8d848aa5b70b48194e5a340af5803fc08ba79f6f4657fc7b9588c89e",
+      "policy": "random",
+      "restore_exact": true,
+      "retained": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.0031722251325827706,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.00770875585396259,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0018994015603551841,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.004260127515633515,
+        "transitions": 192
+      },
+      "session_sha256": "3039b6d778f04e6c5790929bbf83b38da66a323ee2785495bfa71d08001000bd",
+      "training_transitions": 768,
+      "training_transitions_per_second": 234.81588416428545,
+      "wall_seconds": 3.2706475659997523
+    },
+    {
+      "after": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.003117668327584116,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.00738103097673376,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0019936947915349043,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.00416413136528426,
+        "transitions": 192
+      },
+      "before": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.08096698854860226,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.13599047147365045,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.17712797002233138,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.13136181001486136,
+        "transitions": 192
+      },
+      "brain_seed": 41,
+      "cpu_seconds": 3.435395955999997,
+      "family_counts": {
+        "inside": 253,
+        "mixed": 297,
+        "overflow": 218
+      },
+      "history_tip": "1ae8ce1c5de5213736ab4f31f7c69d552ede6c08f4b85343f05dda134b27faa2",
+      "learner_sha256": "fbcc1fae68f2c1b4491396a7dbf429b81b2237e7634fe2582976c427bd91c2c9",
+      "parent_sha256": "cab223de8d848aa5b70b48194e5a340af5803fc08ba79f6f4657fc7b9588c89e",
+      "policy": "error_guided",
+      "restore_exact": true,
+      "retained": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.003117668327584116,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.00738103097673376,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0019936947915349043,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.00416413136528426,
+        "transitions": 192
+      },
+      "session_sha256": "dc4f2f35f4c65d78380fc9a859c27157163f8c395f4b56b8fa1d297df6b0c19e",
+      "training_transitions": 768,
+      "training_transitions_per_second": 223.52980157902212,
+      "wall_seconds": 3.435783482000261
+    },
+    {
+      "after": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.003441877135605539,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.0074246103470785195,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0020288979184693795,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.004298461800384479,
+        "transitions": 192
+      },
+      "before": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.07981124759233817,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.12598471124348506,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.182268689802,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.1293548828792744,
+        "transitions": 192
+      },
+      "brain_seed": 73,
+      "cpu_seconds": 3.475707157000002,
+      "family_counts": {
+        "inside": 256,
+        "mixed": 256,
+        "overflow": 256
+      },
+      "history_tip": "9c6ae09fc760b81d318b7469ee251776b1ad1288b0d49e224f0a6b0ebd83592f",
+      "learner_sha256": "032041bfad22b68679e164fbee0ffb71adad5c87cc5064c50033e2d31e78c3ff",
+      "parent_sha256": "e3bafdf8d0e4f2acc735dc226596ace418c72fc0282599f72ddfa9f70220d9c1",
+      "policy": "fixed",
+      "restore_exact": true,
+      "retained": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.003441877135605539,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.0074246103470785195,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.0020288979184693795,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.004298461800384479,
+        "transitions": 192
+      },
+      "session_sha256": "a03dd1cd8ab68345a50a98a8798cb52abae6ff08aa43ded316e96d6340e9900f",
+      "training_transitions": 768,
+      "training_transitions_per_second": 220.80504922357676,
+      "wall_seconds": 3.478181331000087
+    },
+    {
+      "after": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.003308805885925454,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.007346909843926756,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.002231312626123536,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.004295676118658582,
+        "transitions": 192
+      },
+      "before": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.07981124759233817,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.12598471124348506,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.182268689802,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.1293548828792744,
+        "transitions": 192
+      },
+      "brain_seed": 73,
+      "cpu_seconds": 3.4721075889999966,
+      "family_counts": {
+        "inside": 271,
+        "mixed": 242,
+        "overflow": 255
+      },
+      "history_tip": "c1ccabd870ad4ec7d44722a4293fbb0a82cc442c8da487c932b7db88043e8bc2",
+      "learner_sha256": "e2cbfc41c63e4ebbcf8cff7772ea4091a9305a79e34b1437ee88474b1820e9de",
+      "parent_sha256": "e3bafdf8d0e4f2acc735dc226596ace418c72fc0282599f72ddfa9f70220d9c1",
+      "policy": "random",
+      "restore_exact": true,
+      "retained": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.003308805885925454,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.007346909843926756,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.002231312626123536,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.004295676118658582,
+        "transitions": 192
+      },
+      "session_sha256": "660cc7519d4e05799e5d6dccd535081380f422049b6811afb141b0df15adfd4d",
+      "training_transitions": 768,
+      "training_transitions_per_second": 221.1833751729353,
+      "wall_seconds": 3.472232030999294
+    },
+    {
+      "after": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.004514460127759853,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.0069552372901517555,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.001983457847623618,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.004484385088511743,
+        "transitions": 192
+      },
+      "before": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.07981124759233817,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.12598471124348506,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.182268689802,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.1293548828792744,
+        "transitions": 192
+      },
+      "brain_seed": 73,
+      "cpu_seconds": 3.6519234280000035,
+      "family_counts": {
+        "inside": 268,
+        "mixed": 275,
+        "overflow": 225
+      },
+      "history_tip": "4b4e7f69501f69b8853e0633adf36689ec778271990c7b10ed219d7874978eeb",
+      "learner_sha256": "b5172435ebcd855d6dc88a65271ba47d9a797a4daf51ec14b0039d5cf00621ff",
+      "parent_sha256": "e3bafdf8d0e4f2acc735dc226596ace418c72fc0282599f72ddfa9f70220d9c1",
+      "policy": "error_guided",
+      "restore_exact": true,
+      "retained": {
+        "experience_source": "deterministic_simulation",
+        "families": {
+          "inside": {
+            "mse": 0.004514460127759853,
+            "transitions": 64
+          },
+          "mixed": {
+            "mse": 0.0069552372901517555,
+            "transitions": 64
+          },
+          "overflow": {
+            "mse": 0.001983457847623618,
+            "transitions": 64
+          }
+        },
+        "mean_family_mse": 0.004484385088511743,
+        "transitions": 192
+      },
+      "session_sha256": "fef4cb0a60963144133a9d3897e7be70ff9b7ff8e6e1977d45ee782b93262b28",
+      "training_transitions": 768,
+      "training_transitions_per_second": 210.29073845445902,
+      "wall_seconds": 3.6520866569990176
+    }
+  ],
+  "scheduler_seed": 20260925,
+  "schema": "axm.uc-simulation-comparison/v1",
+  "sources": [
+    {
+      "commit": "97fb228105a44bb3ec15f569ad8124ce301ce0cd",
+      "path": "/workspace/scratch/7356affac651/neural-growth/repos/axm-uc-neural",
+      "source_sha256": {
+        "src/axm_uc/neural_simulation.py": "e8ecd7441fcded2b6a122a5eb4d8412a2f3b12a82d9164837a416a1c4ce655ab",
+        "src/axm_uc/simulation.py": "df41e086b40d78e72ee2c2d40ccf23a331aea6882abf85e84e04b4bd5fa5cec0",
+        "tools/run_uc_simulation_lab.py": "b2f8d6f9d7c16678724bbea599297e94cef3f6c8fff808482fdf58e36ba14be2"
+      },
+      "working_tree_modified": true
+    },
+    {
+      "commit": "eb54a9c152bea7a75cc86b8825ed7fb019a5e194",
+      "path": "/workspace/scratch/7356affac651/neural-growth/repos/axm-neural-brain",
+      "source_sha256": {
+        "neural/axm_brain/__init__.py": "775d48d6b9d8ba3b8b2c614ab1fbe88d8a10f93d12f75c5f1c2f3e50f65dc069",
+        "neural/axm_brain/analyzer.py": "70b0caba083c404d44c06ff47860690cd9c94995ac4569f0f68d4509da4fa31c",
+        "neural/axm_brain/contract.py": "c93e66885c6f55aa7f954fd9030f329858f4c9e31eb6bdfa1fc0c4fbdf3f1f39",
+        "neural/axm_brain/core.py": "4ee41683b404f475b04fd57ad884588b617cd206e7e88c701047c634e64156b1",
+        "neural/axm_brain/hybrid.py": "2b8994a7fbf8abcf79e66b407cca6408c7573bf879b0c2bf3934877fec22b3bd",
+        "neural/axm_brain/innovation.py": "036a8e18d5c11943bf6d0a16020a9fc66dd5db9f1f5ed39dea92ef72fea080d8",
+        "neural/axm_brain/roots.py": "973a5ec18c300eb4f682381a49740ba8925fe2ebc3bffaf3f80e582e84fd75b1",
+        "neural/axm_brain/simulation.py": "527cb78394691158406d701c5defa3bed558cb9da1d964b208844e80cd91e105",
+        "neural/axm_brain/simulation_session.py": "b9409458d6c25722de76de370e3a0dc5b84c2ae16bc9e77c485d3e838f3dc4a3",
+        "neural/axm_brain/state.py": "0c532734e066287e85533a060952bd8a2e638257872901abf31d991a46f805b3",
+        "neural/axm_brain/taxonomy.py": "81f8f74aee79c32af24b13329463f32a1adbb36bdc44f9ee239dfe796b5285a8"
+      },
+      "working_tree_modified": true
+    },
+    {
+      "commit": "24cd8517d216ae09f2062c3c19fed5269119c0db",
+      "path": "/workspace/scratch/7356affac651/neural-growth/repos/axm-neural-network",
+      "source_sha256": {
+        "src/axm_neural_network/__init__.py": "8ab6a84f7efde340fe8484cba28f695431a17fcbe2e09d5ffcd80b2304e5dbfb",
+        "src/axm_neural_network/bus.py": "03a6c7eb5b46b2a79b37353c97c91d012c7539d5ebe0ccbb4a4e6e4441f60950",
+        "src/axm_neural_network/delivery.py": "5944ef9b16e232d9be010d2a998b5cd6cfba8c7c5d58109ba8942906d1a55e2c",
+        "src/axm_neural_network/host_bridge.py": "e70142e9977d99576b6a2a33466b48dfdd1de5ba483a0fc9ecd8558d616374a1",
+        "src/axm_neural_network/microsim.py": "4e6eafe1ef833dba8b63c9f9c72fb4e395c28a020064579decb6a7de14cd9cd7",
+        "src/axm_neural_network/model.py": "6dc64e3d5c7014492360819eab847ba31c03110126cc14ac629f8283f3ef6120",
+        "src/axm_neural_network/queue.py": "599b01cc19f1bf636fd31ba78f25f3204eda13275cc1df1e2b79d71bb3a9313a",
+        "src/axm_neural_network/registry.py": "d70202508db848397d3f55b58cb6e00f3f9dbdc599d94693815309ae84bdf6dd",
+        "src/axm_neural_network/replay.py": "578d843925df0a4f6296fbd83067ad00076665f0532fe5aa73362446f6a7bdd9",
+        "src/axm_neural_network/simulation_contract.py": "241a3a4eae1d6d51b3fe81935df94ba160c0c44626105bcb030c7321954dd6a7",
+        "src/axm_neural_network/state.py": "b182d5fee1adcfae4b919d4f649c493a17e86fbaa7978772cb36ab7b62379978",
+        "src/axm_neural_network/substrate.py": "7c9ed33ddf6727d9729a75cc18717244a9de592bb6d662bc7f412a114cfaa8b7"
+      },
+      "working_tree_modified": true
+    }
+  ],
+  "training_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63
+  ]
+}

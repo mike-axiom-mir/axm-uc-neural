@@ -477,3 +477,39 @@ Current AXM-owned machine/workshop code: **PolyForm Noncommercial 1.0.0 + `CREAT
 Commercial Creator Output is allowed; commercial exploitation of the AXM creation machine itself requires separate permission.
 
 Earlier published versions keep any historical licenses already granted to those versions. Third-party material remains under its own terms. See `LICENSE`, `LICENSE_BOUNDARY.md`, and `CREATOR_OUTPUT_PERMISSION.md`.
+
+## Expanded Creative Mode experiment
+
+For the overnight cross-capability experiment, see
+[Expanded UC Creative Mode](docs/UC_EXPANDED_CREATIVE.md). The seeded resumable
+loop deliberately crosses assets, complete textured products, playable browser
+games, web/software projects, coded visual runtimes, Creative Hand DAGs, Python
+tools and compound/package creation. Later creations can incorporate the
+successful-output catalog from earlier runs. The Windows launcher
+`RUN_UC_EXPANDED_CREATIVE_100GB.cmd` uses an eight-active-hour / 100 GB stop
+threshold and follows the existing Creative toggle.
+
+## UC direct trajectory learning experiment
+
+For the "learn the whole temporary search path, not only the final design"
+experiment, see [UC direct trajectory learning lab](docs/UC_TRAJECTORY_LEARNING.md).
+Every verified transition can update the experimental recurrent brain while the
+final result supplies delayed reward; raw temporary simulation bodies are not
+retained in replay memory. The general Creative Mode loop is not automatically
+wired into this stream yet.
+
+## UC workflow practice experiment
+
+For pipeline growth from **real measured UC executions**, use
+[UC workflow practice lab](docs/UC_WORKFLOW_PRACTICE_LAB.md). It searches
+installed typed operators, executes candidate routes, retains failure evidence,
+confirms repeatable successful structures and stores reusable workflow memory
+outside the live machine body. No workflow is automatically canonized.
+
+## UC simulation learning experiment
+
+See [UC simulation lab](docs/UC_SIMULATION_LAB.md) for a bounded, resumable AXM
+learner driven by UC canvas-fit plus grounded workflow-pass experience. The
+workflow side learns bounded consequences of structure/surface/detail/verification
+ordering without rewriting or automatically executing UC pipelines. See also the
+[research direction](research/UC_SIMULATION_EXPERIENCE_BRIDGE.md).

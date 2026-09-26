@@ -31,6 +31,12 @@ jobs:
       - name: Run complete repository gate
         if: matrix.os == 'ubuntu-latest' && matrix.python == '3.11'
         run: python tools/build.py
-      - name: Check stacked-base whitespace
+      - name: Check whitespace against event base
         if: matrix.os == 'ubuntu-latest' && matrix.python == '3.11'
-        run: git diff --check eb628500c952dcaeb31318983446265580b2466f...HEAD
+        env:
+          DIFF_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [[ -z "$DIFF_BASE" || "$DIFF_BASE" =~ ^0+$ ]]; then
+            DIFF_BASE=$(git hash-object -w -t tree --stdin < /dev/null)
+          fi
+          git diff --check "$DIFF_BASE" HEAD

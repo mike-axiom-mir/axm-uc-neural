@@ -1,0 +1,90 @@
+name: UC persistent simulation learning
+
+on:
+  push:
+    paths:
+      - 'src/axm_uc/neural_simulation.py'
+      - 'src/axm_uc/workflow_simulation.py'
+      - 'src/axm_uc/trajectory_simulation.py'
+      - 'src/axm_uc/neural_trajectory_bridge.py'
+      - 'src/axm_uc/product_workflow.py'
+      - 'src/axm_uc/simulation.py'
+      - 'tests/test_neural_simulation.py'
+      - 'tests/test_workflow_practice_lab.py'
+      - 'tests/test_expanded_creative.py'
+      - 'tools/run_uc_expanded_creative.py'
+      - 'RUN_UC_EXPANDED_CREATIVE_100GB.cmd'
+      - 'tools/run_uc_workflow_practice.py'
+      - 'RUN_UC_WORKFLOW_PRACTICE.cmd'
+      - 'integration/test_uc_simulation_learning.py'
+      - 'tools/run_uc_simulation_lab.py'
+      - 'tools/run_uc_trajectory_learning.py'
+      - 'RUN_UC_TRAJECTORY_LEARNING.cmd'
+      - 'tools/benchmark_uc_simulation.py'
+      - 'RUN_UC_SIMULATION_LAB.cmd'
+      - '.github/workflows/uc-simulation-learning.yml'
+  pull_request:
+    paths:
+      - 'src/axm_uc/neural_simulation.py'
+      - 'src/axm_uc/workflow_simulation.py'
+      - 'src/axm_uc/trajectory_simulation.py'
+      - 'src/axm_uc/neural_trajectory_bridge.py'
+      - 'src/axm_uc/product_workflow.py'
+      - 'src/axm_uc/simulation.py'
+      - 'tests/test_neural_simulation.py'
+      - 'tests/test_workflow_practice_lab.py'
+      - 'tests/test_expanded_creative.py'
+      - 'tools/run_uc_expanded_creative.py'
+      - 'RUN_UC_EXPANDED_CREATIVE_100GB.cmd'
+      - 'tools/run_uc_workflow_practice.py'
+      - 'RUN_UC_WORKFLOW_PRACTICE.cmd'
+      - 'integration/test_uc_simulation_learning.py'
+      - 'tools/run_uc_simulation_lab.py'
+      - 'tools/run_uc_trajectory_learning.py'
+      - 'RUN_UC_TRAJECTORY_LEARNING.cmd'
+      - 'tools/benchmark_uc_simulation.py'
+      - 'RUN_UC_SIMULATION_LAB.cmd'
+      - '.github/workflows/uc-simulation-learning.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  simulation-learning:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.13']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: mike-axiom-mir/axm-neural-brain
+          ref: a463363ac84543f1a4289830793e9f1a0993e6fe
+          path: brain
+      - uses: actions/checkout@v4
+        with:
+          repository: mike-axiom-mir/axm-neural-network
+          ref: 0dc91d6b0324fc2dec2173c73b9e3310e945a254
+          path: network
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify UC providers and experiment wrappers without importing a learner
+        run: python -c "import sys,unittest; sys.path.insert(0,'src'); suite=unittest.TestSuite([unittest.defaultTestLoader.loadTestsFromName('tests.test_neural_simulation'),unittest.defaultTestLoader.loadTestsFromName('tests.test_workflow_practice_lab'),unittest.defaultTestLoader.loadTestsFromName('tests.test_expanded_creative')]); result=unittest.TextTestRunner(verbosity=2).run(suite); sys.exit(not result.wasSuccessful())"
+      - name: Execute expanded Creative Mode multi-class smoke
+        run: python tools/run_uc_expanded_creative.py --base creations/ci-expanded-creative --hours 0.1 --max-bytes 100000000 --max-runs 4
+      - name: Execute real UC workflow practice smoke
+        run: python tools/run_uc_workflow_practice.py --profile vent-hood --base creations/ci-workflow-practice
+      - name: Verify direct learning and persistent continuation
+        run: python -c "import sys,unittest; sys.path[:0]=['src','brain','network/src']; result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.discover('integration')); sys.exit(not result.wasSuccessful())"
+      - name: Start and continue direct trajectory learning without raw replay
+        run: |
+          python tools/run_uc_trajectory_learning.py --brain-root brain --network-root network --checkpoint state/neural-experiment/ci-trajectory.json --episodes 4
+          python tools/run_uc_trajectory_learning.py --brain-root brain --network-root network --checkpoint state/neural-experiment/ci-trajectory.json --episodes 2
+      - name: Start and resume the actual host CLI
+        run: |
+          python tools/run_uc_simulation_lab.py --brain-root brain --network-root network --checkpoint state/neural-experiment/ci-session.json --episodes 24
+          python tools/run_uc_simulation_lab.py --brain-root brain --network-root network --checkpoint state/neural-experiment/ci-session.json --resume --episodes 3

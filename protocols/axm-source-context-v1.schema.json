@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://axiom-mir.local/protocols/axm-source-context-v1.schema.json",
+  "title": "AXM Source Context v1",
+  "type": "object",
+  "required": ["schema", "kind", "attribution_status"],
+  "properties": {
+    "schema": {"const": "axm.source-context/v1"},
+    "kind": {
+      "enum": [
+        "human_prompt",
+        "model_request",
+        "autonomous_creative",
+        "scheduled_event",
+        "machine_event",
+        "replay",
+        "imported",
+        "unattributed"
+      ]
+    },
+    "attribution_status": {
+      "enum": [
+        "ATTRIBUTED",
+        "UNATTRIBUTED",
+        "HOLD_INVALID_SOURCE_CONTEXT",
+        "HOLD_INVALID_SOURCE_KIND"
+      ]
+    },
+    "actor": {"type": "string", "maxLength": 200},
+    "interface": {"type": "string", "maxLength": 200},
+    "source_event_id": {"type": "string", "maxLength": 300},
+    "parent_trace_id": {"type": "string", "maxLength": 128},
+    "session_id": {"type": "string", "maxLength": 200},
+    "note": {"type": "string", "maxLength": 500},
+    "declared_kind": {"type": ["string", "null"], "maxLength": 80},
+    "raw_context_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "origin_request_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "origin_prompt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "origin_direction_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "origin_purpose_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "metadata": {
+      "type": "object",
+      "maxProperties": 16,
+      "additionalProperties": {
+        "type": ["string", "number", "integer", "boolean", "null"]
+      }
+    }
+  },
+  "additionalProperties": false
+}

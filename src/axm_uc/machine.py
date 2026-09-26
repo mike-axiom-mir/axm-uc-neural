@@ -19,6 +19,8 @@ from .organ_library import ExecutableOrganLibrary
 from .organ_discovery import organ_discovery_summary
 from .organ_gap import organ_gap_summary
 from .organ_materialization import census_organs, organ_materialization_summary
+from .neural_experience import observe_uc_experience
+from .provenance_trace import request_source_scope
 from .registry import Registry
 from .spawn import creation_forge_summary
 
@@ -176,7 +178,16 @@ class UniversalCreationMachine:
 
     def direct(self, request: dict[str, Any]) -> dict[str, Any]:
         """Compile ordinary language into a direction contract and gate routing on sufficiency."""
-        return route_direction(self.root, request)
+        with request_source_scope(request):
+            result = route_direction(self.root, request)
+        observe_uc_experience(
+            self.root,
+            path_id="machine.direct",
+            event="result",
+            status=str(result.get("type", "RETURNED")),
+            payload={"request": request, "result": result},
+        )
+        return result
 
     def _capability_gap(self, request: dict[str, Any]) -> dict[str, Any]:
         kind = str(request.get("kind", "unknown"))
@@ -221,9 +232,18 @@ class UniversalCreationMachine:
             return self.direct(request)
         manifest = self.capabilities.route(kind)
         if manifest is None:
-            return self._capability_gap(request)
+            gap = self._capability_gap(request)
+            observe_uc_experience(
+                self.root,
+                path_id="machine.create",
+                event="gap",
+                status=str(gap.get("type", "CAPABILITY_GAP")),
+                payload={"request": request, "result": gap},
+            )
+            return gap
         try:
-            result = self.capabilities.invoke(manifest, request.get("inputs", {}))
+            with request_source_scope(request):
+                result = self.capabilities.invoke(manifest, request.get("inputs", {}))
         except CapabilityError as exc:
             error = {
                 "type": "CREATION_ERROR",
@@ -232,13 +252,28 @@ class UniversalCreationMachine:
             }
             if exc.details:
                 error["details"] = exc.details
+            observe_uc_experience(
+                self.root,
+                path_id="machine.create",
+                event="error",
+                status="CREATION_ERROR",
+                payload={"request": request, "result": error},
+            )
             return error
-        return {
+        creation = {
             "type": "CREATION_RESULT",
             "capability": manifest.get("id"),
             "directional_outcome": request.get("direction") or request.get("purpose") or kind,
             "result": result,
         }
+        observe_uc_experience(
+            self.root,
+            path_id="machine.create",
+            event="result",
+            status="CREATION_RESULT",
+            payload={"request": request, "result": creation},
+        )
+        return creation
 
     def trial(self, request: dict[str, Any], per_level: int = 6) -> dict[str, Any]:
         """Plan, create, then independently re-verify a project-style creation."""
@@ -260,6 +295,7 @@ class UniversalCreationMachine:
                 }
                 verification = self.create({
                     "kind": "verify-project",
+                    "axm_source": request.get("axm_source"),
                     "direction": f"verify creation trial for {request.get('kind')}",
                     "inputs": {
                         "path": project_path,
@@ -275,7 +311,7 @@ class UniversalCreationMachine:
                     and verification["result"].get("passed") is True
                 )
 
-        return {
+        trial = {
             "type": "CREATION_TRIAL",
             "passed": passed,
             "truth_status": "OBSERVED_DETERMINISTIC_PROJECT_VALIDATION",
@@ -287,11 +323,91 @@ class UniversalCreationMachine:
                 "browser visuals and interactive behavior still require a browser/user/authorized host test",
             ],
         }
+        trial_bytes = json.dumps(
+            trial,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            default=str,
+        ).encode("utf-8")
+        request_bytes = json.dumps(
+            request,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            default=str,
+        ).encode("utf-8")
+        request_inputs = request.get("inputs")
+        observe_uc_experience(
+            self.root,
+            path_id="machine.trial",
+            event="result",
+            status="PASS" if passed else "HOLD",
+            payload={
+                "axm_source": request.get("axm_source"),
+                "request_summary": {
+                    "kind": request.get("kind"),
+                    "direction": request.get("direction"),
+                    "input_keys": sorted(request_inputs) if isinstance(request_inputs, dict) else [],
+                },
+                "request_sha256": hashlib.sha256(request_bytes).hexdigest(),
+                "result_summary": {
+                    "type": trial["type"],
+                    "passed": passed,
+                    "truth_status": trial["truth_status"],
+                    "creation_type": creation.get("type"),
+                    "creation_capability": creation.get("capability"),
+                    "verification_type": (
+                        verification.get("type")
+                        if isinstance(verification, dict)
+                        else None
+                    ),
+                    "verification_passed": (
+                        verification.get("result", {}).get("passed")
+                        if isinstance(verification, dict)
+                        and isinstance(verification.get("result"), dict)
+                        else None
+                    ),
+                },
+                "trial_sha256": hashlib.sha256(trial_bytes).hexdigest(),
+                "full_result_returned_to_host": True,
+            },
+        )
+        return trial
 
     def test_candidate(self, candidate_path: Path) -> dict[str, Any]:
-        return test_capability_candidate(self.root, candidate_path)
+        result = test_capability_candidate(self.root, candidate_path)
+        observe_uc_experience(
+            self.root,
+            path_id="candidate.test",
+            event="result",
+            status="PASS" if result.get("passed") else "HOLD",
+            payload={"candidate_path": str(candidate_path), "result": result},
+        )
+        return result
 
     def adopt_candidate(self, candidate_path: Path) -> dict[str, Any]:
+        try:
+            result = self._adopt_candidate_unobserved(candidate_path)
+        except Exception as exc:
+            observe_uc_experience(
+                self.root,
+                path_id="candidate.adopt",
+                event="error",
+                status=type(exc).__name__,
+                payload={"candidate_path": str(candidate_path), "error": str(exc)},
+            )
+            raise
+        observe_uc_experience(
+            self.root,
+            path_id="candidate.adopt",
+            event="result",
+            status="ADOPTED" if result.get("adopted") else "HOLD",
+            payload={"candidate_path": str(candidate_path), "result": result},
+        )
+        return result
+
+    def _adopt_candidate_unobserved(self, candidate_path: Path) -> dict[str, Any]:
         candidate_path = Path(candidate_path).resolve()
         try:
             with candidate_adoption_lock(self.root):

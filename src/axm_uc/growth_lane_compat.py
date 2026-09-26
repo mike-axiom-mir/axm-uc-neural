@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 from typing import Any
 
@@ -105,6 +107,8 @@ def _provider_bridge_request(request: dict[str, Any], missing: list[str]) -> dic
 def _install_machine_creation_contract() -> None:
     from .capabilities import CapabilityError
     from .machine import UniversalCreationMachine
+    from .neural_experience import observe_uc_experience
+    from .provenance_trace import request_source_scope
 
     if getattr(UniversalCreationMachine, "_growth_lane_compat_installed", False):
         return
@@ -152,11 +156,19 @@ def _install_machine_creation_contract() -> None:
             return original_create(self, request)
         inputs = request.get("inputs", {})
         if not isinstance(inputs, dict):
-            return {
+            error = {
                 "type": "CREATION_ERROR",
                 "capability": manifest.get("id"),
                 "message": "request.inputs must be an object",
             }
+            observe_uc_experience(
+                self.root,
+                path_id="machine.create",
+                event="error",
+                status="CREATION_ERROR",
+                payload={"request": request, "result": error, "compatibility_path": True},
+            )
+            return error
         missing = self.capabilities.missing_required_inputs(manifest, inputs)
         if missing:
             provider = request.get("provider")
@@ -165,14 +177,23 @@ def _install_machine_creation_contract() -> None:
                 bridge["inputs"]["provider"] = provider
                 provider_manifest = self.capabilities.route("provider-backed-project")
                 if provider_manifest is None:
-                    return {
+                    gap = {
                         "type": "CAPABILITY_GAP",
                         "truth_status": "LOCAL_PROVIDER_BRIDGE_NOT_LIVE",
                         "request_kind": request.get("kind"),
                         "directional_outcome": request.get("direction") or request.get("purpose") or request.get("kind"),
                     }
+                    observe_uc_experience(
+                        self.root,
+                        path_id="machine.create",
+                        event="gap",
+                        status="CAPABILITY_GAP",
+                        payload={"request": request, "result": gap, "compatibility_path": True},
+                    )
+                    return gap
                 try:
-                    result = self.capabilities.invoke(provider_manifest, bridge["inputs"])
+                    with request_source_scope(request):
+                        result = self.capabilities.invoke(provider_manifest, bridge["inputs"])
                 except CapabilityError as exc:
                     error = {
                         "type": "CREATION_ERROR",
@@ -181,8 +202,15 @@ def _install_machine_creation_contract() -> None:
                     }
                     if exc.details:
                         error["details"] = exc.details
+                    observe_uc_experience(
+                        self.root,
+                        path_id="machine.create",
+                        event="error",
+                        status="CREATION_ERROR",
+                        payload={"request": request, "result": error, "compatibility_path": True},
+                    )
                     return error
-                return {
+                creation = {
                     "type": "CREATION_RESULT",
                     "capability": provider_manifest.get("id"),
                     "directional_outcome": request.get("direction") or request.get("purpose") or request.get("kind"),
@@ -190,7 +218,23 @@ def _install_machine_creation_contract() -> None:
                     "original_route": manifest.get("id"),
                     "result": result,
                 }
-            return capability_input_gap(self, request, manifest, missing)
+                observe_uc_experience(
+                    self.root,
+                    path_id="machine.create",
+                    event="result",
+                    status="CREATION_RESULT",
+                    payload={"request": request, "result": creation, "compatibility_path": True},
+                )
+                return creation
+            gap = capability_input_gap(self, request, manifest, missing)
+            observe_uc_experience(
+                self.root,
+                path_id="machine.create",
+                event="gap",
+                status=str(gap.get("type", "CAPABILITY_INPUT_GAP")),
+                payload={"request": request, "result": gap, "compatibility_path": True},
+            )
+            return gap
         return original_create(self, request)
 
     def trial(self, request: dict[str, Any], per_level: int = 6) -> dict[str, Any]:
@@ -233,6 +277,7 @@ def _install_machine_creation_contract() -> None:
                 )
                 verification = self.create({
                     "kind": "verify-project",
+                    "axm_source": request.get("axm_source"),
                     "direction": f"verify creation trial for {request.get('kind')}",
                     "inputs": {
                         "path": project_path,
@@ -251,7 +296,7 @@ def _install_machine_creation_contract() -> None:
                     and verification["result"].get("passed") is True
                 )
 
-        return {
+        trial = {
             "type": "CREATION_TRIAL",
             "passed": passed,
             "truth_status": "OBSERVED_DETERMINISTIC_PROJECT_VALIDATION",
@@ -263,6 +308,58 @@ def _install_machine_creation_contract() -> None:
                 "browser visuals and interactive behavior still require a browser/user/authorized host test",
             ],
         }
+        trial_bytes = json.dumps(
+            trial,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            default=str,
+        ).encode("utf-8")
+        request_bytes = json.dumps(
+            request,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            default=str,
+        ).encode("utf-8")
+        request_inputs = request.get("inputs")
+        observe_uc_experience(
+            self.root,
+            path_id="machine.trial",
+            event="result",
+            status="PASS" if passed else "HOLD",
+            payload={
+                "axm_source": request.get("axm_source"),
+                "request_summary": {
+                    "kind": request.get("kind"),
+                    "direction": request.get("direction"),
+                    "input_keys": sorted(request_inputs) if isinstance(request_inputs, dict) else [],
+                },
+                "request_sha256": hashlib.sha256(request_bytes).hexdigest(),
+                "result_summary": {
+                    "type": trial["type"],
+                    "passed": passed,
+                    "truth_status": trial["truth_status"],
+                    "creation_type": creation.get("type"),
+                    "creation_capability": creation.get("capability"),
+                    "verification_type": (
+                        verification.get("type")
+                        if isinstance(verification, dict)
+                        else None
+                    ),
+                    "verification_passed": (
+                        verification.get("result", {}).get("passed")
+                        if isinstance(verification, dict)
+                        and isinstance(verification.get("result"), dict)
+                        else None
+                    ),
+                    "compatibility_path": True,
+                },
+                "trial_sha256": hashlib.sha256(trial_bytes).hexdigest(),
+                "full_result_returned_to_host": True,
+            },
+        )
+        return trial
 
     UniversalCreationMachine.create = create
     UniversalCreationMachine.trial = trial

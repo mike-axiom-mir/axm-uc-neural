@@ -11,3 +11,9 @@ node_modules/
 __pycache__/
 *.pyc
 .DS_Store
+
+
+# UC/OpenWALDO experiment runtime evidence stays local.
+state/neural-experiment/
+creations/uc-waldo-wiring-proof-site/
+.axm/live-creation/runs/uc-waldo-wiring-proof/

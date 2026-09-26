@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AXM UC / Neural Experiment Cockpit</title>
+<style>
+:root{color-scheme:dark;--bg:#06090f;--panel:#0b111b;--panel2:#0e1724;--line:#26364c;--text:#e8f0fb;--muted:#8798af;--good:#73f7ca;--hold:#f2b866;--bad:#ff7d88;--blue:#82b7ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#18304f 0,#0b1220 28%,#06090f 63%);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+.shell{max-width:1600px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:16px}.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#8ba1bd}.title{font-size:clamp(25px,3vw,44px);font-weight:700;letter-spacing:-.035em;margin:4px 0}.subtitle{color:var(--muted);max-width:760px}.badge{border:1px solid #304765;background:#0b1625;border-radius:999px;padding:8px 12px;color:#aec6e5;white-space:nowrap}
+.cockpit{display:grid;grid-template-columns:1fr 1fr 1.18fr;gap:15px}.screen{min-height:500px;border:1px solid #2b3a4e;border-radius:20px;background:linear-gradient(180deg,rgba(17,28,44,.94),rgba(8,13,21,.96));box-shadow:0 24px 70px rgba(0,0,0,.32),inset 0 0 0 1px rgba(255,255,255,.02);overflow:hidden;position:relative}.screen:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.035),transparent 25%,transparent 72%,rgba(130,183,255,.025))}
+.head{padding:16px 17px 12px;border-bottom:1px solid #213047;display:flex;align-items:center;justify-content:space-between;gap:12px}.head h2{font-size:15px;margin:0;letter-spacing:.03em}.lamp{width:9px;height:9px;border-radius:50%;background:#58677a;box-shadow:0 0 14px currentColor}.lamp.good{background:var(--good);color:var(--good)}.lamp.hold{background:var(--hold);color:var(--hold)}.lamp.bad{background:var(--bad);color:var(--bad)}
+.body{padding:16px}.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.metric{border:1px solid #223248;background:#09111d;border-radius:13px;padding:11px}.metric .k{color:#7388a4;font-size:11px;text-transform:uppercase;letter-spacing:.08em}.metric .v{font-size:21px;font-weight:650;margin-top:4px}.metric .s{color:#8da0b8;font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:8px;border-radius:99px;background:#121d2b;overflow:hidden;border:1px solid #203149}.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4d8fff,#73f7ca);transition:width .35s}.section-title{font-size:11px;color:#8296b0;text-transform:uppercase;letter-spacing:.11em;margin:17px 0 8px}
+.rows{display:grid;gap:7px;max-height:260px;overflow:auto;padding-right:2px}.row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid #1d2b3d;background:#09101a;border-radius:10px;padding:8px 10px}.row .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.state{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#91a4bc}.state.good{color:var(--good)}.state.hold{color:var(--hold)}.state.bad{color:var(--bad)}
+.preview-wrap{padding:12px;height:420px}.preview-frame{width:100%;height:100%;border:1px solid #293d55;border-radius:15px;background:#05080d;object-fit:contain;display:block}.preview-note{padding:0 15px 15px;color:#8395ac;font-size:11px}
+.controls{margin-top:15px;border:1px solid #2a394d;border-radius:18px;background:#09101a;padding:14px 15px;display:grid;grid-template-columns:auto 1fr auto 1fr auto;gap:14px;align-items:center}.control-name{font-weight:650}.control-desc{color:#7f91a8;font-size:11px}.toggle{position:relative;width:50px;height:28px;display:inline-block}.toggle input{opacity:0;width:0;height:0}.slider{position:absolute;inset:0;background:#202b39;border:1px solid #34465d;border-radius:99px;cursor:pointer;transition:.2s}.slider:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#8fa1b6;transition:.2s}.toggle input:checked+.slider{background:#12352e;border-color:#3d967d}.toggle input:checked+.slider:before{transform:translateX(22px);background:var(--good)}.range{width:170px;accent-color:#73f7ca}.footer{display:flex;justify-content:space-between;gap:18px;color:#687b94;font-size:11px;margin-top:12px;padding:0 4px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+@media(max-width:1100px){.cockpit{grid-template-columns:1fr}.screen{min-height:430px}.controls{grid-template-columns:auto 1fr}.preview-wrap{height:360px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <div>
+      <div class="eyebrow">AXM experiment cockpit</div>
+      <div class="title">UC ↔ OpenWALDO</div>
+      <div class="subtitle">Three separate views: neural growth, UC experience wiring, and the newest real draft/preview UC already produced. The dashboard does not actively render new screenshots.</div>
+    </div>
+    <div id="clock" class="badge mono">LOCAL · --:--:--</div>
+  </div>
+
+  <div class="cockpit">
+    <section class="screen">
+      <div class="head"><h2>Neural brain</h2><span id="neuralLamp" class="lamp"></span></div>
+      <div class="body">
+        <div class="metric-grid">
+          <div class="metric"><div class="k">Learning link</div><div id="linkState" class="v">OFF</div><div id="linkBoundary" class="s">boundary 0</div></div>
+          <div class="metric"><div class="k">Feeder</div><div id="feederState" class="v">—</div><div id="feederSmall" class="s">not started</div></div>
+          <div class="metric"><div class="k">Eligible experience</div><div id="eligible" class="v">0</div><div class="s">since link boundary</div></div>
+          <div class="metric"><div class="k">Consumed</div><div id="consumed" class="v">0</div><div class="s">trained batches ledger</div></div>
+        </div>
+        <div class="section-title">Growth evidence</div>
+        <div id="growthRows" class="rows"></div>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="head"><h2>UC machine</h2><span id="ucLamp" class="lamp"></span></div>
+      <div class="body">
+        <div class="metric-grid">
+          <div class="metric"><div class="k">Wiring coverage</div><div id="coverage" class="v">—</div><div class="bar"><i id="coverageBar"></i></div></div>
+          <div class="metric"><div class="k">Experience events</div><div id="events" class="v">0</div><div class="s">observed boundaries</div></div>
+          <div class="metric"><div class="k">Intake records</div><div id="intake" class="v">0</div><div class="s">OpenWALDO-format</div></div>
+          <div class="metric"><div class="k">Creative practice</div><div id="creativeState" class="v">—</div><div id="creativeSmall" class="s">not attached</div></div>
+        </div>
+        <div class="section-title">Recent UC experience</div>
+        <div id="eventRows" class="rows"></div>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="head"><h2>Current draft</h2><span id="previewLamp" class="lamp"></span></div>
+      <div class="preview-wrap"><img id="preview" class="preview-frame" alt="UC draft or activity preview"></div>
+      <div id="previewNote" class="preview-note">Looking for current preview evidence…</div>
+    </section>
+  </div>
+
+  <section class="controls">
+    <div>
+      <div class="control-name">UC creative mode</div>
+      <div id="creativeControlDesc" class="control-desc">OFF by default · pauses/resumes an attached creative-practice session</div>
+    </div>
+    <label class="toggle"><input id="creativeToggle" type="checkbox"><span class="slider"></span></label>
+    <div>
+      <div class="control-name">Neural learning link</div>
+      <div class="control-desc">OFF by default · ON starts at the current intake boundary, no hidden backlog training</div>
+    </div>
+    <label class="toggle"><input id="neuralToggle" type="checkbox"><span class="slider"></span></label>
+    <div>
+      <div class="control-name">Draft refresh <span id="intervalValue">8s</span></div>
+      <input id="interval" class="range" type="range" min="3" max="30" step="1" value="8">
+    </div>
+  </section>
+
+  <div class="footer">
+    <span>Read-mostly local interface · no external libraries · loopback only.</span>
+    <span id="lastUpdate" class="mono">waiting for status</span>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let snapshot=null, previewTimer=null, writing=false;
+function setLamp(el,state){
+  el.className='lamp '+(state==='good'?'good':state==='bad'?'bad':state==='hold'?'hold':'');
+}
+function row(label,state,klass=''){
+  const d=document.createElement('div');d.className='row';
+  const a=document.createElement('div');a.className='label';a.textContent=label;
+  const b=document.createElement('div');b.className='state '+klass;b.textContent=state;
+  d.append(a,b);return d;
+}
+function feederClass(s){if(!s)return 'hold'; if(s.includes('GROWTH'))return 'good'; if(s.includes('HOLD'))return 'bad'; return 'hold'}
+async function loadStatus(){
+  try{
+    const r=await fetch('/api/status',{cache:'no-store'}); if(!r.ok)throw new Error(await r.text());
+    snapshot=await r.json(); render(snapshot);
+  }catch(e){$('lastUpdate').textContent='status error · '+e.message;setLamp($('ucLamp'),'bad');setLamp($('neuralLamp'),'bad')}
+}
+function render(s){
+  const c=s.controls||{}, u=s.uc||{}, n=s.neural||{}, cov=u.coverage||{}, feed=n.feeder||{}, growth=n.growth||{}, p=u.creative_practice||{}, pm=s.preview||{};
+  $('creativeToggle').checked=!!c.uc_creative_enabled;
+  $('neuralToggle').checked=!!c.neural_link_enabled;
+  $('interval').value=c.preview_interval_seconds||8;$('intervalValue').textContent=(c.preview_interval_seconds||8)+'s';
+  $('linkState').textContent=c.neural_link_enabled?'ON':'OFF';$('linkState').style.color=c.neural_link_enabled?'var(--good)':'var(--muted)';
+  $('linkBoundary').textContent='boundary '+(c.neural_link_start_sequence||0);
+  $('feederState').textContent=(feed.status||'NOT STARTED').replaceAll('_',' ');
+  $('feederState').style.fontSize='14px';$('feederSmall').textContent=feed.model||'local feeder';
+  $('eligible').textContent=n.eligible_since_link_boundary||0;$('consumed').textContent=n.consumed_records||0;
+  setLamp($('neuralLamp'),growth.status==='REAL_NEURAL_GROWTH_OBSERVED'?'good':feederClass(feed.status||''));
+  const gr=$('growthRows');gr.replaceChildren();
+  gr.append(row('Growth status',growth.status||'NOT PROVEN',growth.status==='REAL_NEURAL_GROWTH_OBSERVED'?'good':'hold'));
+  if(growth.before&&growth.after){
+    gr.append(row('Real completed runs',growth.before.real_complete_runs+' → '+growth.after.real_complete_runs,'good'));
+    gr.append(row('Model artifacts',growth.before.artifact_files+' → '+growth.after.artifact_files,'good'));
+    gr.append(row('Artifact fingerprint',growth.before.artifact_fingerprint===growth.after.artifact_fingerprint?'UNCHANGED':'CHANGED',growth.before.artifact_fingerprint===growth.after.artifact_fingerprint?'hold':'good'));
+  } else {
+    gr.append(row('Learning evidence','WAITING FOR LOCAL RUN','hold'));
+  }
+
+  const received=cov.required_paths_received||0,total=cov.required_paths||0,percent=total?Math.round(received/total*100):0;
+  $('coverage').textContent=total?received+'/'+total:'—';$('coverageBar').style.width=percent+'%';
+  $('events').textContent=u.event_records||0;$('intake').textContent=u.intake_records||0;
+  setLamp($('ucLamp'),cov.status==='COMPLETE'?'good':cov.status?'hold':'');
+  $('creativeState').textContent=p.status||'UNATTACHED';$('creativeState').style.fontSize='14px';
+  $('creativeSmall').textContent=p.attached?('session '+String(p.session||'').slice(0,8)+' · '+(p.trials||0)+' trials'):(p.database||'no practice database');
+  $('creativeControlDesc').textContent=p.attached?'Attached to latest AXM creative-practice session':'Control flag is ready; no creative-practice session is attached yet';
+
+  const er=$('eventRows');er.replaceChildren();
+  const recent=(u.recent_events||[]).slice().reverse().slice(0,12);
+  if(!recent.length)er.append(row('No UC experience yet','WAITING','hold'));
+  for(const e of recent){
+    const source=e.source_actor||e.source_kind||'unattributed';
+    er.append(row(source+' → '+(e.path_id||'?')+' · '+(e.event||'?'),e.intake_received?'RECEIVED':'NO INTAKE',e.intake_received?'good':'hold'));
+  }
+
+  $('previewNote').textContent=pm.label||'preview unavailable';
+  setLamp($('previewLamp'),pm.real_pixels?'good':'hold');
+  $('lastUpdate').textContent='updated '+new Date().toLocaleTimeString();
+  schedulePreview(c.preview_interval_seconds||8);
+}
+async function setControl(name,value){
+  if(writing)return;writing=true;
+  try{
+    const r=await fetch('/api/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,value})});
+    if(!r.ok)throw new Error(await r.text()); await loadStatus();
+  }catch(e){alert(e.message);await loadStatus()}finally{writing=false}
+}
+function refreshPreview(){$('preview').src='/api/preview?t='+Date.now()}
+function schedulePreview(seconds){
+  clearTimeout(previewTimer); refreshPreview();
+  previewTimer=setTimeout(()=>schedulePreview(seconds),Math.max(3,seconds)*1000);
+}
+$('creativeToggle').addEventListener('change',e=>setControl('uc_creative_enabled',e.target.checked));
+$('neuralToggle').addEventListener('change',e=>setControl('neural_link_enabled',e.target.checked));
+$('interval').addEventListener('change',e=>setControl('preview_interval_seconds',Number(e.target.value)));
+setInterval(()=>{$('clock').textContent='LOCAL · '+new Date().toLocaleTimeString()},1000);
+setInterval(loadStatus,2000);loadStatus();
+</script>
+</body>
+</html>

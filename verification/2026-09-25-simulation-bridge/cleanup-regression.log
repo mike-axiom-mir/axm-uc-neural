@@ -1,0 +1,10 @@
+test_candidate_can_be_tested_and_build_debris_is_cleaned (tests.test_machine.MachineTests.test_candidate_can_be_tested_and_build_debris_is_cleaned) ... ok
+test_live_creation_routes_and_writes (tests.test_machine.MachineTests.test_live_creation_routes_and_writes) ... ok
+test_unsatisfied_request_emits_structured_directional_gap (tests.test_machine.MachineTests.test_unsatisfied_request_emits_structured_directional_gap) ... ok
+test_failed_candidate_test_preserves_foreign_workspace (tests.test_candidate_workspace_isolation.CandidateWorkspaceIsolationTests.test_failed_candidate_test_preserves_foreign_workspace) ... ok
+test_successful_candidate_test_preserves_foreign_workspace (tests.test_candidate_workspace_isolation.CandidateWorkspaceIsolationTests.test_successful_candidate_test_preserves_foreign_workspace) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.541s
+
+OK

@@ -57,6 +57,20 @@ class SelfWorkspaceTests(unittest.TestCase):
             self.assertEqual(comparison["added"], ["src/axm_uc/new_organ.py"])
             self.assertEqual(comparison["removed"], ["tests/test_seed.py"])
 
+    def test_neural_experiment_runtime_telemetry_is_not_part_of_source_body(self):
+        with tempfile.TemporaryDirectory() as td:
+            parent = Path(td)
+            live = self._mini_body(parent / "live")
+            telemetry = live / "state/neural-experiment"
+            telemetry.mkdir(parents=True)
+            (telemetry / "uc-wiring-events.jsonl").write_text('{"runtime":true}\n', encoding="utf-8")
+            candidate = parent / "candidate"
+            result = clone_self_workspace(live, candidate)
+            self.assertTrue(result["exact_copy_verified"])
+            self.assertFalse((candidate / "state/neural-experiment").exists())
+            comparison = inspect_self_workspace(live, candidate)["comparison"]
+            self.assertFalse(comparison["changed"], comparison)
+
     def test_candidate_body_runs_its_own_build_and_returns_log(self):
         with tempfile.TemporaryDirectory() as td:
             parent = Path(td)
