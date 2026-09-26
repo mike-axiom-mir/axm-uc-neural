@@ -478,6 +478,17 @@ Commercial Creator Output is allowed; commercial exploitation of the AXM creatio
 
 Earlier published versions keep any historical licenses already granted to those versions. Third-party material remains under its own terms. See `LICENSE`, `LICENSE_BOUNDARY.md`, and `CREATOR_OUTPUT_PERMISSION.md`.
 
+## Expanded Creative Mode experiment
+
+For the overnight cross-capability experiment, see
+[Expanded UC Creative Mode](docs/UC_EXPANDED_CREATIVE.md). The seeded resumable
+loop deliberately crosses assets, complete textured products, playable browser
+games, web/software projects, coded visual runtimes, Creative Hand DAGs, Python
+tools and compound/package creation. Later creations can incorporate the
+successful-output catalog from earlier runs. The Windows launcher
+`RUN_UC_EXPANDED_CREATIVE_100GB.cmd` uses an eight-active-hour / 100 GB stop
+threshold and follows the existing Creative toggle.
+
 ## UC direct trajectory learning experiment
 
 For the "learn the whole temporary search path, not only the final design"
