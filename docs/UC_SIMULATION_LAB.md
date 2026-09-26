@@ -12,10 +12,20 @@ deterministic UC authoritative:
    provider binds its vocabulary to the actual stage IDs in
    `axm_uc.product_workflow.PROFILES`.
 
-The workflow experiment is deliberately one step below autonomous orchestration.
-It teaches the learner consequences of ordering and repair choices; it does not
-rewrite Product Workflow, execute Creative Hands, promote a learned route, or
-claim artistic quality.
+The workflow-pass experiment is deliberately one step below autonomous
+orchestration. Its pass-consequence rules are **experimental heuristics written
+for this simulation**, while the stage vocabulary is grounded in current Product
+Workflow. It therefore tests whether the learner can retain and generalize a
+sequencing problem; it does not discover workflow truth from real creation
+outcomes.
+
+For actual workflow learning-by-use, see
+[UC workflow practice lab](UC_WORKFLOW_PRACTICE_LAB.md), which executes real
+candidate pipelines, measures declared outcomes and retains confirmed reusable
+workflow structures.
+
+The neural simulation does not rewrite Product Workflow, execute Creative Hands,
+promote a learned route, or claim artistic quality.
 
 On Windows, run **RUN_UC_SIMULATION_LAB.cmd**. It requires Python 3.11+ and Git,
 fetches pinned Brain/Network source into the experiment's local dependency
