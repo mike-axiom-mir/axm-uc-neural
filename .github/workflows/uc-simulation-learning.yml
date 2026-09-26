@@ -8,6 +8,9 @@ on:
       - 'src/axm_uc/product_workflow.py'
       - 'src/axm_uc/simulation.py'
       - 'tests/test_neural_simulation.py'
+      - 'tests/test_workflow_practice_lab.py'
+      - 'tools/run_uc_workflow_practice.py'
+      - 'RUN_UC_WORKFLOW_PRACTICE.cmd'
       - 'integration/test_uc_simulation_learning.py'
       - 'tools/run_uc_simulation_lab.py'
       - 'tools/benchmark_uc_simulation.py'
@@ -20,6 +23,9 @@ on:
       - 'src/axm_uc/product_workflow.py'
       - 'src/axm_uc/simulation.py'
       - 'tests/test_neural_simulation.py'
+      - 'tests/test_workflow_practice_lab.py'
+      - 'tools/run_uc_workflow_practice.py'
+      - 'RUN_UC_WORKFLOW_PRACTICE.cmd'
       - 'integration/test_uc_simulation_learning.py'
       - 'tools/run_uc_simulation_lab.py'
       - 'tools/benchmark_uc_simulation.py'
@@ -52,8 +58,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - name: Verify UC provider without importing a learner
-        run: python -c "import sys,unittest; sys.path.insert(0,'src'); result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromName('tests.test_neural_simulation')); sys.exit(not result.wasSuccessful())"
+      - name: Verify UC providers and workflow-practice wrapper without importing a learner
+        run: python -c "import sys,unittest; sys.path.insert(0,'src'); suite=unittest.TestSuite([unittest.defaultTestLoader.loadTestsFromName('tests.test_neural_simulation'),unittest.defaultTestLoader.loadTestsFromName('tests.test_workflow_practice_lab')]); result=unittest.TextTestRunner(verbosity=2).run(suite); sys.exit(not result.wasSuccessful())"
       - name: Verify direct learning and persistent continuation
         run: python -c "import sys,unittest; sys.path[:0]=['src','brain','network/src']; result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.discover('integration')); sys.exit(not result.wasSuccessful())"
       - name: Start and resume the actual host CLI
