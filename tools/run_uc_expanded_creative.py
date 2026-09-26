@@ -31,11 +31,11 @@ DEFAULT_BASE = ROOT / "creations" / "neural-experiment" / "expanded-creative"
 STATE_SCHEMA = "axm.expanded-creative-state/v1"
 FAMILIES = (
     "parametric-structure",
-    "material-product",
-    "textured-3d-product",
     "browser-game",
     "web-project",
     "native-visual",
+    "material-product",
+    "textured-3d-product",
     "creative-flow-mesh",
     "python-tool",
     "compound-hub",
