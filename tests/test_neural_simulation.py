@@ -50,7 +50,9 @@ class CanvasSimulationTests(unittest.TestCase):
             results = provider.step_many(states, actions)
             for result in results:
                 body = provider.verify_transition(result['experience'])
-                self.assertEqual(body['selected_capabilities'], provider.stage_groups[body['workflow_pass']])
+                self.assertEqual(body['workflow_stages'], provider.stage_groups[body['workflow_pass']])
+                self.assertEqual(body['selected_capabilities'],
+                                 [f"product-workflow:{family}:{stage}" for stage in body['workflow_stages']])
                 self.assertTrue(body['verification']['bounded_debt'])
                 self.assertEqual(provider.restore(json.loads(json.dumps(provider.snapshot(result['state'])))), result['state'])
 
