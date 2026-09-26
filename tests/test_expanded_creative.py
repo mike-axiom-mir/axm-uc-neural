@@ -73,6 +73,30 @@ class ExpandedCreativeTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 lab._state(path, seed=18, session="ignored")
 
+    def test_interrupted_run_is_preserved_and_session_advances(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            state = {
+                "schema": lab.STATE_SCHEMA,
+                "seed": 17,
+                "session": "s",
+                "next_run": 0,
+                "bytes_created": 0,
+                "runs": [],
+                "catalog": [],
+                "family_counts": {family: 0 for family in lab.FAMILIES},
+                "automatic_canon_admission": False,
+            }
+            family = lab.FAMILIES[0]
+            run_dir = base / "runs" / f"run-000000-{family}"
+            run_dir.mkdir(parents=True)
+            (run_dir / "partial.bin").write_bytes(b"unfinished")
+            recovered = lab.recover_next_run_if_needed(base, state, seed=17)
+            self.assertTrue(recovered["interrupted_preserved"])
+            self.assertEqual(state["next_run"], 1)
+            self.assertTrue((run_dir / "partial.bin").is_file())
+            self.assertTrue((run_dir / "interrupted-recovery.json").is_file())
+
     def test_catalog_aware_software_is_real_project_request(self):
         with tempfile.TemporaryDirectory() as directory:
             run_dir = Path(directory)
