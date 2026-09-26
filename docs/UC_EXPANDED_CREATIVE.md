@@ -39,9 +39,11 @@ seeded repeated exploration:
    deterministic Creative Flow DAG;
 8. **python-tool** — inspectable software generated from the session's prior
    creation-class history;
-9. **compound-hub** — a new web/software project that incorporates the catalog of
-   prior successful outputs, followed by a second UC capability that packages
-   that newly created project as a portable creation bundle.
+9. **compound-hub** — a new validated mixed-media software project that uses the
+   prior catalog, physically copies a bounded sample of earlier GLB/PNG/WebP/WAV
+   realizations into its own project body, links them from the local interface,
+   and then passes that newly combined project through a second UC capability
+   that packages it as a portable creation bundle.
 
 After first coverage, compound creation receives extra scheduling weight so the
 experiment does not collapse back into an asset-variant factory.
@@ -75,6 +77,11 @@ The state keeps:
 The catalog becomes input to later software/compound creations. That means later
 runs can explicitly incorporate knowledge of what this session has already made
 instead of behaving like every heartbeat is the first heartbeat.
+
+Binary reuse is restricted after path resolution to the ordinary `creations/`
+tree. A tampered catalog cannot point the compound builder at an arbitrary host
+file. The mixed-project copy is additionally bounded to a small sample so the
+ordinary neural/provenance record remains below its intake boundary.
 
 The catalog is operational exploration memory, not aesthetic approval or machine
 canon.
@@ -125,7 +132,11 @@ The stop threshold is checked between creation runs. One in-flight bounded UC
 creation may cross the threshold by its own output size before the loop can stop;
 individual capabilities retain their own output/resource bounds.
 
-Pressing Ctrl+C preserves the current state and completed outputs.
+Pressing Ctrl+C preserves the current state and completed outputs. If the process
+or machine dies after a run directory was created but before session state was
+committed, restart recovery never overwrites that directory: a complete run
+receipt is reconstructed into session state, while an incomplete run is marked
+as interrupted, preserved, and the monotonic run counter advances.
 
 Portable form:
 
