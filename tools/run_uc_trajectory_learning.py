@@ -220,6 +220,7 @@ def main(argv=None):
     from neural.axm_brain.state import snapshot_payload, verify_snapshot
 
     provider_map = providers()
+    provider_specs = {name: provider.describe_space() for name, provider in provider_map.items()}
     training_seeds = tuple(range(256))
     evaluation_seeds = tuple(range(10_000, 10_032))
 
@@ -227,7 +228,14 @@ def main(argv=None):
         saved = verify_snapshot(json.loads(args.checkpoint.read_text(encoding="utf-8")))
         if saved.get("schema") != "axm.uc-trajectory-learning/v1":
             raise ValueError("unsupported trajectory checkpoint")
+        if saved.get("provider_specs") != provider_specs:
+            raise ValueError("trajectory provider contract changed; preserve this checkpoint and start a new lineage")
+        if saved.get("training_seeds") != list(training_seeds) or saved.get("evaluation_seeds") != list(evaluation_seeds):
+            raise ValueError("trajectory curriculum changed; preserve this checkpoint and start a new lineage")
         brain = AXMBrain.from_snapshot(saved["brain"])
+        if brain.config.replay_capacity != 0 or brain.replay:
+            raise ValueError("trajectory checkpoint violates no-raw-replay contract")
+        brain.wake()
         episode_count = saved["episode_count"]
         runs = list(saved["runs"])
         initial_evaluation = saved["initial_evaluation"]
@@ -248,6 +256,7 @@ def main(argv=None):
         "brain": brain.to_snapshot(),
         "episode_count": episode_count + args.episodes,
         "trajectory_length": next(iter(provider_map.values())).HORIZON,
+        "provider_specs": provider_specs,
         "training_seeds": list(training_seeds),
         "evaluation_seeds": list(evaluation_seeds),
         "initial_evaluation": initial_evaluation,
