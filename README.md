@@ -478,6 +478,15 @@ Commercial Creator Output is allowed; commercial exploitation of the AXM creatio
 
 Earlier published versions keep any historical licenses already granted to those versions. Third-party material remains under its own terms. See `LICENSE`, `LICENSE_BOUNDARY.md`, and `CREATOR_OUTPUT_PERMISSION.md`.
 
+## UC direct trajectory learning experiment
+
+For the "learn the whole temporary search path, not only the final design"
+experiment, see [UC direct trajectory learning lab](docs/UC_TRAJECTORY_LEARNING.md).
+Every verified transition can update the experimental recurrent brain while the
+final result supplies delayed reward; raw temporary simulation bodies are not
+retained in replay memory. The general Creative Mode loop is not automatically
+wired into this stream yet.
+
 ## UC workflow practice experiment
 
 For pipeline growth from **real measured UC executions**, use
