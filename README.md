@@ -481,4 +481,7 @@ Earlier published versions keep any historical licenses already granted to those
 ## UC simulation learning experiment
 
 See [UC simulation lab](docs/UC_SIMULATION_LAB.md) for a bounded, resumable AXM
-learner driven by UC canvas-fit experience, and the [research direction](research/UC_SIMULATION_EXPERIENCE_BRIDGE.md).
+learner driven by UC canvas-fit plus grounded workflow-pass experience. The
+workflow side learns bounded consequences of structure/surface/detail/verification
+ordering without rewriting or automatically executing UC pipelines. See also the
+[research direction](research/UC_SIMULATION_EXPERIENCE_BRIDGE.md).
