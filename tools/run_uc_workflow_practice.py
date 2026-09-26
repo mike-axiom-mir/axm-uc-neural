@@ -4,7 +4,8 @@
 This is deterministic UC learning-by-use, not neural weight training. Each
 profile searches installed typed operators, executes real candidate pipelines,
 measures declared outcomes, repairs/reranks where possible, confirms repeatable
-successes, and writes caller-owned workflow memory under state/neural-experiment.
+successes, and writes caller-owned workflow memory under the ordinary creations
+workspace. This keeps generated evidence outside the live machine body.
 
 Nothing is admitted to canonical UC automatically.
 """
@@ -23,7 +24,7 @@ from axm_uc.atomic import atomic_write_json
 from axm_uc.workflow_experiments import experiment
 from axm_uc.workflow_memory import read_memory
 
-BASE = ROOT / "state" / "neural-experiment" / "workflow-practice"
+BASE = ROOT / "creations" / "neural-experiment" / "workflow-practice"
 PROFILE_NAMES = ("vent-hood", "character-motion", "code-project")
 
 
