@@ -60,6 +60,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Verify UC providers and workflow-practice wrapper without importing a learner
         run: python -c "import sys,unittest; sys.path.insert(0,'src'); suite=unittest.TestSuite([unittest.defaultTestLoader.loadTestsFromName('tests.test_neural_simulation'),unittest.defaultTestLoader.loadTestsFromName('tests.test_workflow_practice_lab')]); result=unittest.TextTestRunner(verbosity=2).run(suite); sys.exit(not result.wasSuccessful())"
+      - name: Execute real UC workflow practice smoke
+        run: python tools/run_uc_workflow_practice.py --profile vent-hood --base creations/ci-workflow-practice
       - name: Verify direct learning and persistent continuation
         run: python -c "import sys,unittest; sys.path[:0]=['src','brain','network/src']; result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.discover('integration')); sys.exit(not result.wasSuccessful())"
       - name: Start and resume the actual host CLI
