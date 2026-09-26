@@ -6,29 +6,36 @@ import unittest
 
 from neural.axm_brain.simulation_session import SimulationSession
 from neural.axm_brain.state import verify_snapshot
-from tools.run_uc_simulation_lab import fresh_session, providers, atomic_write, checkpoint_lock
+from tools.run_uc_simulation_lab import fresh_session, providers, atomic_write, checkpoint_lock, workflow_route_evaluation
 
 
 class UCDirectSimulationTests(unittest.TestCase):
-    def test_actual_uc_rule_teaches_unseen_examples_and_survives_disk_restore(self):
+    def test_uc_and_workflow_experience_survive_learning_and_disk_restore(self):
         session = fresh_session()
         parent = deepcopy(session.parent)
         before = session.evaluate()
-        session.advance(384)
+        routing_before = workflow_route_evaluation(session)
+        session.advance(768)
         after = session.evaluate()
-        self.assertLess(after['mean_family_mse'],before['mean_family_mse']*.5)
-        for family in before['families']:
-            self.assertLess(after['families'][family]['mse'],before['families'][family]['mse'])
+        routing_after = workflow_route_evaluation(session)
+        self.assertLess(after['mean_family_mse'], before['mean_family_mse'])
+        for family in ('inside', 'overflow', 'mixed'):
+            self.assertLess(after['families'][family]['mse'], before['families'][family]['mse'])
+        self.assertEqual(routing_before['probes'], 256)
+        self.assertEqual(routing_after['probes'], 256)
+        self.assertEqual(set(routing_after['families']),
+                         {'workflow-static-3d','workflow-animated-3d','workflow-game','workflow-image'})
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)/'checkpoint.json'
             atomic_write(path,session.to_snapshot())
             restored = SimulationSession.from_snapshot(json.loads(path.read_text()),providers())
-        self.assertEqual(restored.evaluate(),after)
-        self.assertEqual(restored.parent,parent)
+        self.assertEqual(restored.evaluate(), after)
+        self.assertEqual(workflow_route_evaluation(restored), routing_after)
+        self.assertEqual(restored.parent, parent)
         restored.advance(3)
         session.advance(3)
-        self.assertEqual(restored.to_snapshot(),session.to_snapshot())
-        self.assertEqual(session.learner.host_experience_count,387)
+        self.assertEqual(restored.to_snapshot(), session.to_snapshot())
+        self.assertEqual(session.learner.host_experience_count, 771)
         self.assertTrue(all(event.source=='deterministic_simulation' for event in session.learner.replay))
 
     def test_one_provider_failure_cannot_partially_replace_saved_state(self):
