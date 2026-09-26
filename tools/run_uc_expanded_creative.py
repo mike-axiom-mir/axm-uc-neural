@@ -556,7 +556,7 @@ def main(argv=None) -> int:
     pause_started = None
 
     try:
-        while len(state["runs"]) < args.max_runs and state["bytes_created"] < args.max_bytes:
+        while int(state["next_run"]) < args.max_runs and state["bytes_created"] < args.max_bytes:
             if args.follow_control and not read_controls(ROOT).get("uc_creative_enabled", False):
                 if pause_started is None:
                     pause_started = time.monotonic()
@@ -587,14 +587,15 @@ def main(argv=None) -> int:
     summary = {
         "status": "SAVED",
         "base": _relative(base),
-        "runs": len(state["runs"]),
+        "runs_total": state["next_run"],
+        "retained_run_receipts": len(state["runs"]),
         "successful_catalog_entries": len(state["catalog"]),
         "bytes_created": state["bytes_created"],
         "family_counts": state["family_counts"],
         "next_run": state["next_run"],
         "stopped_by": (
             "byte_ceiling" if state["bytes_created"] >= args.max_bytes
-            else "run_ceiling" if len(state["runs"]) >= args.max_runs
+            else "run_ceiling" if int(state["next_run"]) >= args.max_runs
             else "time_or_controlled_stop"
         ),
     }
