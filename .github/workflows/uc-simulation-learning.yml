@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'src/axm_uc/neural_simulation.py'
+      - 'src/axm_uc/workflow_simulation.py'
+      - 'src/axm_uc/product_workflow.py'
       - 'src/axm_uc/simulation.py'
       - 'tests/test_neural_simulation.py'
       - 'integration/test_uc_simulation_learning.py'
@@ -14,6 +16,8 @@ on:
   pull_request:
     paths:
       - 'src/axm_uc/neural_simulation.py'
+      - 'src/axm_uc/workflow_simulation.py'
+      - 'src/axm_uc/product_workflow.py'
       - 'src/axm_uc/simulation.py'
       - 'tests/test_neural_simulation.py'
       - 'integration/test_uc_simulation_learning.py'
