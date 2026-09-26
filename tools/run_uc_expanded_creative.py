@@ -12,6 +12,7 @@ aesthetic judge. UC capability results remain authoritative for what succeeded.
 from __future__ import annotations
 
 import argparse
+import base64
 import copy
 import json
 import os
@@ -306,33 +307,99 @@ if __name__=="__main__": print(json.dumps(summarize(),sort_keys=True))
     return [_request_base(request, **ctx)]
 
 
+def _collect_prior_binary(catalog: list[dict]) -> tuple[dict, list[dict]]:
+    """Copy a bounded sample of earlier binary creations into the next compound."""
+    media = {
+        ".glb": "model/gltf-binary",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".webp": "image/webp",
+        ".wav": "audio/wav",
+    }
+    binaries = {}
+    inventory = []
+    total = 0
+    maximum_total = 4 * 1024 * 1024  # keep machine request/provenance below the 8 MiB intake bound
+    maximum_file = 1024 * 1024
+    for item in reversed(catalog[-24:]):
+        raw = Path(item["path"])
+        target = raw if raw.is_absolute() else ROOT / raw
+        if not target.exists():
+            continue
+        candidates = [target] if target.is_file() else sorted(
+            path for path in target.rglob("*") if path.is_file() and path.suffix.casefold() in media
+        )
+        for file in candidates:
+            suffix = file.suffix.casefold()
+            if suffix not in media:
+                continue
+            try:
+                size = file.stat().st_size
+            except OSError:
+                continue
+            if size <= 0 or size > maximum_file or total + size > maximum_total:
+                continue
+            body = file.read_bytes()
+            name = f'assets/{int(item["run_index"]):06d}-{_safe_id(item["family"])}-{_safe_id(file.stem)}{suffix}'
+            if name in binaries:
+                continue
+            binaries[name] = {
+                "encoding": "base64",
+                "content": base64.b64encode(body).decode("ascii"),
+                "media_type": media[suffix],
+            }
+            inventory.append({
+                "family": item["family"],
+                "source": item["path"],
+                "file": file.name,
+                "copied_as": name,
+                "bytes": size,
+            })
+            total += size
+            if len(binaries) >= 12 or total >= maximum_total:
+                return binaries, inventory
+    return binaries, inventory
+
+
 def _compound_hub(run_dir: Path, rng: random.Random, catalog: list[dict], **ctx) -> list[dict]:
     if len(catalog) < 2:
         return _web_project(run_dir, rng, catalog, **ctx)
     chosen = catalog[-min(12, len(catalog)):]
     hub = run_dir / "compound-hub"
+    binaries, copied = _collect_prior_binary(chosen)
     items = []
     for item in chosen:
         target = ROOT / item["path"] if not Path(item["path"]).is_absolute() else Path(item["path"])
         rel = os.path.relpath(target, hub).replace(os.sep, "/")
         items.append({"family": item["family"], "path": item["path"], "relative": rel})
-    rows = "".join(
+    catalog_rows = "".join(
         f'<li><span>{row["family"]}</span><code>{row["relative"]}</code></li>' for row in items
     )
+    copied_rows = "".join(
+        f'<li><a href="{row["copied_as"]}">{row["family"]} — {row["file"]}</a> <small>{row["bytes"]} bytes</small></li>'
+        for row in copied
+    ) or "<li>No bounded binary realization was small enough to copy into this compound.</li>"
     bg, panel, accent, warm, danger = rng.choice(PALETTES)
-    manifest = json.dumps({"schema": "axm.expanded-creative-compound/v1", "items": items}, indent=2)
+    manifest = json.dumps({
+        "schema": "axm.expanded-creative-compound/v2",
+        "catalog": items,
+        "physically_copied_realizations": copied,
+    }, indent=2)
+    text_files = {
+        "index.html": f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>UC Compound</title><link rel="stylesheet" href="style.css"></head><body><main><p>UC CROSS-CAPABILITY COMPOUND</p><h1>Compound {ctx["run_index"]:04d}</h1><h2>Session catalog</h2><ul>{catalog_rows}</ul><h2>Copied realizations inside this project</h2><ul>{copied_rows}</ul><button id="b">inspect combination</button><output id="o"></output></main><script src="app.js"></script></body></html>',
+        "style.css": f'body{{margin:0;min-height:100vh;display:grid;place-items:center;background:{bg};color:#fff;font:16px system-ui}}main{{width:min(900px,92vw);padding:40px;background:{panel};border:1px solid {accent};border-radius:24px}}code{{display:block;color:{accent}}a{{color:{warm}}}button{{background:{warm};padding:10px 16px;border:0;border-radius:999px}}',
+        "app.js": 'document.querySelector("#b").onclick=()=>document.querySelector("#o").textContent="software + catalog + copied binary creations combined";',
+        "manifest.json": manifest,
+    }
     request = {
-        "kind": "static-web-project",
-        "direction": "Combine successful outputs from several UC creation classes into one inspectable local compound project.",
+        "kind": "mixed-media-project",
+        "direction": "Physically combine prior UC binary creations with new software in one validated mixed project.",
         "inputs": {
             "path": str(hub),
             "project_type": "static-web",
-            "files": {
-                "index.html": f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>UC Compound</title><link rel="stylesheet" href="style.css"></head><body><main><p>UC CROSS-CAPABILITY COMPOUND</p><h1>Compound {ctx["run_index"]:04d}</h1><ul>{rows}</ul><button id="b">inspect combination</button><output id="o"></output></main><script src="app.js"></script></body></html>',
-                "style.css": f'body{{margin:0;min-height:100vh;display:grid;place-items:center;background:{bg};color:#fff;font:16px system-ui}}main{{width:min(900px,92vw);padding:40px;background:{panel};border:1px solid {accent};border-radius:24px}}code{{display:block;color:{accent}}button{{background:{warm};padding:10px 16px;border:0;border-radius:999px}}',
-                "app.js": 'document.querySelector("#b").onclick=()=>document.querySelector("#o").textContent="catalog + software + prior creations linked";',
-                "manifest.json": manifest,
-            },
+            "text_files": text_files,
+            "binary_files": binaries,
             "checks": [
                 {"type": "contains", "path": "index.html", "text": "UC CROSS-CAPABILITY COMPOUND"},
                 {"type": "json-valid", "path": "manifest.json"},
@@ -343,7 +410,7 @@ def _compound_hub(run_dir: Path, rng: random.Random, catalog: list[dict], **ctx)
     first = _request_base(request, **ctx)
     second = _request_base({
         "kind": "portable-creation-bundle",
-        "direction": "Package the newly created compound project through a second UC capability.",
+        "direction": "Package the newly combined mixed project through a second UC capability.",
         "inputs": {
             "operation": "pack",
             "path": str(run_dir / "compound-hub.axm.zip"),
