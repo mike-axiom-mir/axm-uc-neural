@@ -43,11 +43,24 @@ class ExpandedCreativeTests(unittest.TestCase):
             ]
             ctx = {"session": "session-x", "run_index": 9, "family": "compound-hub"}
             requests = lab._compound_hub(run_dir, random.Random(5), catalog, **ctx)
-        self.assertEqual([row["kind"] for row in requests], ["static-web-project", "portable-creation-bundle"])
-        manifest = json.loads(requests[0]["inputs"]["files"]["manifest.json"])
+        self.assertEqual([row["kind"] for row in requests], ["mixed-media-project", "portable-creation-bundle"])
+        manifest = json.loads(requests[0]["inputs"]["text_files"]["manifest.json"])
         self.assertEqual(len(manifest["items"]), 2)
         self.assertEqual(requests[1]["inputs"]["source"], str(run_dir / "compound-hub"))
         self.assertEqual(requests[1]["inputs"]["operation"], "pack")
+
+    def test_compound_can_physically_copy_prior_binary_creation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "prior.glb"
+            source.write_bytes(b"glTF-test-binary")
+            catalog = [{"run_index": 7, "family": "parametric-structure", "path": str(source), "steps": 1}]
+            binaries, inventory = lab._collect_prior_binary(catalog)
+        self.assertEqual(len(binaries), 1)
+        self.assertEqual(len(inventory), 1)
+        descriptor = next(iter(binaries.values()))
+        self.assertEqual(descriptor["encoding"], "base64")
+        self.assertEqual(descriptor["media_type"], "model/gltf-binary")
 
     def test_saved_state_is_seed_bound_and_resumable(self):
         with tempfile.TemporaryDirectory() as directory:
