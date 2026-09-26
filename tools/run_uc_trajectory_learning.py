@@ -26,7 +26,7 @@ import tempfile
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from tools.run_uc_simulation_lab import prepare_dependencies, load_dependencies, source_identity
 
