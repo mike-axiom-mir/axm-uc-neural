@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 echo.
 echo AXM Expanded UC Creative Experiment
@@ -15,15 +15,15 @@ echo The Creative dashboard toggle can pause/resume this loop.
 echo Main UC source/canon is not modified by this launcher.
 echo.
 where py >nul 2>nul
-if %errorlevel%==0 (
+if !errorlevel! equ 0 (
   py -3 -c "import sys;sys.path.insert(0,'src');from axm_uc.experiment_controls import set_control;set_control('.', 'uc_creative_enabled', True)"
   py -3 tools\run_uc_expanded_creative.py --hours 8 --max-bytes 100000000000 --max-runs 100000 --follow-control
-  set EXITCODE=%errorlevel%
+  set "EXITCODE=!errorlevel!"
   py -3 -c "import sys;sys.path.insert(0,'src');from axm_uc.experiment_controls import set_control;set_control('.', 'uc_creative_enabled', False)"
 ) else (
   python -c "import sys;sys.path.insert(0,'src');from axm_uc.experiment_controls import set_control;set_control('.', 'uc_creative_enabled', True)"
   python tools\run_uc_expanded_creative.py --hours 8 --max-bytes 100000000000 --max-runs 100000 --follow-control
-  set EXITCODE=%errorlevel%
+  set "EXITCODE=!errorlevel!"
   python -c "import sys;sys.path.insert(0,'src');from axm_uc.experiment_controls import set_control;set_control('.', 'uc_creative_enabled', False)"
 )
 echo.
