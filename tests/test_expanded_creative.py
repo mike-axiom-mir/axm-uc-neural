@@ -55,7 +55,7 @@ class ExpandedCreativeTests(unittest.TestCase):
             source = root / "prior.glb"
             source.write_bytes(b"glTF-test-binary")
             catalog = [{"run_index": 7, "family": "parametric-structure", "path": str(source), "steps": 1}]
-            binaries, inventory = lab._collect_prior_binary(catalog)
+            binaries, inventory = lab._collect_prior_binary(catalog, allowed_root=root)
         self.assertEqual(len(binaries), 1)
         self.assertEqual(len(inventory), 1)
         descriptor = next(iter(binaries.values()))
