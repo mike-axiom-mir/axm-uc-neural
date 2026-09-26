@@ -465,6 +465,72 @@ def _creation_path(request: dict, run_dir: Path) -> str:
     return _relative(run_dir)
 
 
+def recover_next_run_if_needed(base: Path, state: dict, *, seed: int) -> dict | None:
+    """Recover a completed receipt or preserve one interrupted run directory."""
+    index = int(state["next_run"])
+    family_rng = random.Random((seed << 32) ^ index ^ 0xA8C54E31)
+    family = choose_family(state, family_rng)
+    run_dir = base / "runs" / f"run-{index:06d}-{_safe_id(family)}"
+    if not run_dir.exists():
+        return None
+
+    receipt_path = run_dir / "receipt.json"
+    receipt = None
+    if receipt_path.is_file():
+        try:
+            candidate = json.loads(receipt_path.read_text(encoding="utf-8"))
+            if (candidate.get("schema") == "axm.expanded-creative-run/v1"
+                    and candidate.get("run_index") == index
+                    and candidate.get("family") == family):
+                receipt = candidate
+        except (OSError, json.JSONDecodeError):
+            receipt = None
+
+    created_bytes = _tree_bytes(run_dir)
+    if receipt is not None:
+        success = receipt.get("success") is True
+        steps = receipt.get("steps") if isinstance(receipt.get("steps"), list) else []
+        if success and steps:
+            state["catalog"].append({
+                "run_index": index,
+                "family": family,
+                "path": steps[-1].get("path", _relative(run_dir)),
+                "steps": len(steps),
+            })
+            state["catalog"] = state["catalog"][-4096:]
+        recovery = {
+            "run_index": index,
+            "family": family,
+            "success": success,
+            "bytes": created_bytes,
+            "receipt": _relative(receipt_path),
+            "recovered_after_state_gap": True,
+        }
+    else:
+        recovery = {
+            "run_index": index,
+            "family": family,
+            "success": False,
+            "bytes": created_bytes,
+            "receipt": None,
+            "interrupted_preserved": True,
+        }
+        atomic_write_json(run_dir / "interrupted-recovery.json", {
+            "schema": "axm.expanded-creative-interruption/v1",
+            "run_index": index,
+            "family": family,
+            "bytes_preserved": created_bytes,
+            "action": "preserved-and-advanced-without-overwrite",
+        })
+
+    state["runs"].append(recovery)
+    state["runs"] = state["runs"][-4096:]
+    state["family_counts"][family] = int(state["family_counts"].get(family, 0)) + 1
+    state["next_run"] = index + 1
+    state["bytes_created"] = int(state.get("bytes_created", 0)) + created_bytes
+    return recovery
+
+
 def run_one(machine: UniversalCreationMachine, base: Path, state: dict, *, seed: int) -> dict:
     index = int(state["next_run"])
     family_rng = random.Random((seed << 32) ^ index ^ 0xA8C54E31)
@@ -551,6 +617,10 @@ def main(argv=None) -> int:
     session = f"expanded-creative-{args.seed}"
     state = _state(state_path, seed=args.seed, session=session)
     machine = UniversalCreationMachine(ROOT)
+    recovered = recover_next_run_if_needed(base, state, seed=args.seed)
+    if recovered is not None:
+        atomic_write_json(state_path, state)
+        print(json.dumps({"recovered": recovered}), flush=True)
     active_started = time.monotonic()
     paused_total = 0.0
     pause_started = None
