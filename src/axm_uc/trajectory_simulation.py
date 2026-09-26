@@ -14,6 +14,7 @@ from dataclasses import asdict, dataclass
 import hashlib
 import json
 import math
+from pathlib import Path
 
 from .workflow_simulation import WorkflowPassSimulation, WorkflowState
 
@@ -55,6 +56,7 @@ class WorkflowTrajectorySimulation:
     def __init__(self, family="static-3d"):
         self.pass_provider = WorkflowPassSimulation(family)
         self.family = family
+        self.provider_source_sha256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
     def describe_space(self):
         base = self.pass_provider.describe_space()
@@ -76,6 +78,7 @@ class WorkflowTrajectorySimulation:
             },
             "capability": "axm_uc.product_workflow.PROFILES",
             "capability_source_sha256": base["capability_source_sha256"],
+            "provider_source_sha256": self.provider_source_sha256,
         }
 
     def reset(self, seed):
