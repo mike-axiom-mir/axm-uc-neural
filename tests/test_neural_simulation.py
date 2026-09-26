@@ -6,6 +6,7 @@ import unittest
 from axm_uc import simulation
 from axm_uc.neural_simulation import CanvasFitSimulation, _packet
 from axm_uc.workflow_simulation import WorkflowPassSimulation, WorkflowState
+from axm_uc.trajectory_simulation import WorkflowTrajectorySimulation, WorkflowTrajectoryState
 
 
 class CanvasSimulationTests(unittest.TestCase):
@@ -77,6 +78,39 @@ class CanvasSimulationTests(unittest.TestCase):
             body[key] = value
             with self.assertRaises(ValueError):
                 provider.verify_transition(_packet(body))
+
+    def test_workflow_trajectory_has_intermediate_steps_and_terminal_reward_only(self):
+        provider = WorkflowTrajectorySimulation('game')
+        state = provider.reset(41)
+        rewards = []
+        for index in range(provider.HORIZON):
+            result = provider.step(state, WorkflowTrajectorySimulation.ACTION_VALUES[index % 4])
+            body = provider.verify_transition(result['experience'])
+            self.assertEqual(body['trajectory_step'], index)
+            self.assertEqual(body['terminal'], index + 1 == provider.HORIZON)
+            rewards.append(body['reward'])
+            state = result['state']
+        self.assertTrue(all(value is None for value in rewards[:-1]))
+        self.assertIsInstance(rewards[-1], float)
+        self.assertGreaterEqual(rewards[-1], -1)
+        self.assertLessEqual(rewards[-1], 1)
+        with self.assertRaises(ValueError):
+            provider.step(state, 0)
+
+    def test_workflow_trajectory_tamper_and_snapshot_fail_closed(self):
+        provider = WorkflowTrajectorySimulation('image')
+        state = provider.reset(7)
+        packet = provider.step(state, .75)['experience']
+        body = deepcopy(packet['body'])
+        body['trajectory_step'] = 99
+        with self.assertRaises(ValueError):
+            provider.verify_transition(_packet(body))
+        snapshot = provider.snapshot(state)
+        self.assertEqual(provider.restore(json.loads(json.dumps(snapshot))), state)
+        bad = deepcopy(snapshot)
+        bad['body']['state']['step'] = 99
+        with self.assertRaises(ValueError):
+            provider.restore(_packet(bad['body']))
 
     def test_uc_adapter_does_not_import_the_learner(self):
         # This module's standalone suite runs without either neural repository.
