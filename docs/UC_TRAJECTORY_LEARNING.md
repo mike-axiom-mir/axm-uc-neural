@@ -50,6 +50,14 @@ so reward from one design cannot leak backward into another design.
 This gives the final result a path to influence weights connected to earlier
 steps through the brain's existing reward-modulated eligibility traces.
 
+The current brain is primarily learning a **transition model**, not directly
+emitting actions. Held-out evaluation therefore uses it model-based: at every
+temporary step, the evaluator asks the learned brain to predict the next
+unresolved-work state for each available pass and chooses the pass with the
+lowest predicted debt. This turns learned consequence prediction into an
+inspectable search policy without pretending the network already owns a native
+action-policy head.
+
 ## No giant simulation archive
 
 The high-throughput path creates the brain with:
@@ -156,7 +164,9 @@ If verification passes, this experiment establishes that:
 4. eligibility traces can carry delayed reward across earlier trajectory steps;
 5. raw simulation experiences do not need to remain in neural replay memory;
 6. learned state survives checkpoint/restart;
-7. the continuing brain can start with zero **experience** and acquire its state
+7. held-out search can use the learned transition model to choose among temporary
+   next steps and measure actual terminal reward/final debt;
+8. the continuing brain can start with zero **experience** and acquire its state
    from explicitly sourced machine experience.
 
 "Zero brain" here means **zero learned experience**, not zero numeric weights.
