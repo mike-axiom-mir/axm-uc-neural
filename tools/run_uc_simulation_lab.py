@@ -47,7 +47,10 @@ def load_dependencies(brain_root,network_root):
 
 def providers():
     from axm_uc.neural_simulation import CanvasFitSimulation
-    return {name:CanvasFitSimulation(name) for name in CanvasFitSimulation.FAMILIES}
+    from axm_uc.workflow_simulation import WorkflowPassSimulation
+    result = {name:CanvasFitSimulation(name) for name in CanvasFitSimulation.FAMILIES}
+    result.update({f'workflow-{name}':WorkflowPassSimulation(name) for name in WorkflowPassSimulation.FAMILIES})
+    return result
 
 
 def fresh_session(*,brain_seed=41,policy='fixed',max_transitions=10_000):
@@ -71,10 +74,61 @@ def source_identity(path):
         for file in sorted((path/relative).glob('*.py')):
             files[str(file.relative_to(path))] = hashlib.sha256(file.read_bytes()).hexdigest()
     if path==ROOT:
-        for relative in ('src/axm_uc/neural_simulation.py','src/axm_uc/simulation.py','tools/run_uc_simulation_lab.py'):
+        for relative in ('src/axm_uc/neural_simulation.py','src/axm_uc/workflow_simulation.py',
+                         'src/axm_uc/product_workflow.py','src/axm_uc/simulation.py',
+                         'tools/run_uc_simulation_lab.py'):
             files[relative] = hashlib.sha256((path/relative).read_bytes()).hexdigest()
     result['source_sha256'] = files
     return result
+
+
+def workflow_route_evaluation(session):
+    """Measure whether learned predictions select the best next workflow pass.
+
+    This is read-only held-out evaluation. It does not execute or adopt a UC
+    pipeline and it does not feed its result back into training.
+    """
+    from axm_uc.workflow_simulation import WorkflowPassSimulation
+    from neural.axm_brain import AXMBrain
+    from neural.axm_brain.simulation import _reset
+
+    by_family, total, correct, total_regret = {}, 0, 0, 0.0
+    for name, provider in session.providers.items():
+        if not isinstance(provider, WorkflowPassSimulation):
+            continue
+        brain = AXMBrain.from_snapshot(session.learner.to_snapshot())
+        family_total = family_correct = 0
+        family_regret = 0.0
+        for seed in session.evaluation_seeds:
+            state = provider.reset(seed)
+            actual_scores, predicted_scores = [], []
+            for action in WorkflowPassSimulation.ACTION_VALUES:
+                event = provider.step(state, action)['experience']['body']
+                actual_scores.append(provider.debt_score(event['target']))
+                _reset(brain)
+                prediction = brain.predict(event['observation'], update_state=False)
+                predicted_scores.append(sum(prediction))
+            actual_best = min(range(len(actual_scores)), key=lambda index: (actual_scores[index], index))
+            predicted_best = min(range(len(predicted_scores)), key=lambda index: (predicted_scores[index], index))
+            regret = actual_scores[predicted_best] - actual_scores[actual_best]
+            family_total += 1
+            family_correct += predicted_best == actual_best
+            family_regret += regret
+        by_family[name] = {
+            'best_pass_accuracy': family_correct / family_total,
+            'mean_debt_regret': family_regret / family_total,
+            'probes': family_total,
+        }
+        total += family_total
+        correct += family_correct
+        total_regret += family_regret
+    return {
+        'families': by_family,
+        'best_pass_accuracy': correct / total if total else None,
+        'mean_debt_regret': total_regret / total if total else None,
+        'probes': total,
+        'truth': 'Read-only held-out choice from predicted pass outcomes; not autonomous pipeline execution or aesthetic quality.',
+    }
 
 
 def atomic_write(path,data):
@@ -114,7 +168,7 @@ def main(argv=None):
     parser.add_argument('--prepare',action='store_true',help='Download exact pinned source dependencies using Git')
     parser.add_argument('--brain-root',type=Path,default=dependencies/'axm-neural-brain')
     parser.add_argument('--network-root',type=Path,default=dependencies/'axm-neural-network')
-    parser.add_argument('--checkpoint',type=Path,default=ROOT/'state/neural-experiment/simulation/session.json')
+    parser.add_argument('--checkpoint',type=Path,default=ROOT/'state/neural-experiment/simulation/session-workflow-v2.json')
     parser.add_argument('--resume',action='store_true',help='Continue the exact saved learner and curriculum')
     parser.add_argument('--episodes',type=int,default=768,help='Additional one-transition UC episodes, at most 10000')
     parser.add_argument('--policy',choices=('fixed','random','error_guided'))
@@ -148,19 +202,24 @@ def run_checkpoint(args,brain_root,network_root):
                                 max_transitions=10_000 if args.max_transitions is None else args.max_transitions)
         history = []
     before = session.evaluate()
+    routing_before = workflow_route_evaluation(session)
     previous = session.to_snapshot()['sha256']
     start,cpu = time.perf_counter(),time.process_time()
     session.advance(args.episodes)
     elapsed,cpu = time.perf_counter()-start,time.process_time()-cpu
     after = session.evaluate()
+    routing_after = workflow_route_evaluation(session)
     checkpoint = session.to_snapshot()
     restored = SimulationSession.from_snapshot(json.loads(json.dumps(checkpoint)),providers())
     retained = restored.evaluate()
-    if after!=retained or restored.to_snapshot()!=checkpoint:
+    retained_routing = workflow_route_evaluation(restored)
+    if after!=retained or routing_after!=retained_routing or restored.to_snapshot()!=checkpoint:
         raise ValueError('restart verification failed; checkpoint was not written')
     record = {'episodes_added':args.episodes,'training_transitions_added':args.episodes,
               'checkpoint_before':previous,'checkpoint_after':checkpoint['sha256'],
               'held_out_before':before,'held_out_after':after,'held_out_after_restore':retained,
+              'workflow_routing_before':routing_before,'workflow_routing_after':routing_after,
+              'workflow_routing_after_restore':retained_routing,
               'restore_exact':True,'family_counts':session.counts,
               'training_wall_seconds':elapsed,'training_cpu_seconds':cpu,
               'training_transitions_per_second':args.episodes/elapsed,
@@ -168,7 +227,8 @@ def run_checkpoint(args,brain_root,network_root):
     output = snapshot_payload({'schema':'axm.uc-simulation-lab/v1','session':checkpoint,
                 'runs':history+[record],'runtime':{'python':platform.python_version(),'platform':platform.platform()},
                 'sources':[source_identity(path) for path in (ROOT,brain_root,network_root)],
-                'limits':['This learns numeric predictions of one existing UC canvas-fitting rule.',
+                'limits':['This learns numeric predictions of existing UC canvas-fit behavior and bounded workflow-pass consequences.',
+                          'Workflow routing is grounded in current product-workflow stage contracts but does not execute or rewrite those pipelines.',
                           'Simulated examples are not external user-task success or autonomous creation.',
                           'error_guided is a measured-error scheduling heuristic, not a trained meta-network.',
                           'No WALDO training, no neural-link change, no automatic UC adoption.',
