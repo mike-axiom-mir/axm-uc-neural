@@ -75,8 +75,9 @@ def source_identity(path):
             files[str(file.relative_to(path))] = hashlib.sha256(file.read_bytes()).hexdigest()
     if path==ROOT:
         for relative in ('src/axm_uc/neural_simulation.py','src/axm_uc/workflow_simulation.py',
-                         'src/axm_uc/product_workflow.py','src/axm_uc/simulation.py',
-                         'tools/run_uc_simulation_lab.py'):
+                         'src/axm_uc/trajectory_simulation.py','src/axm_uc/product_workflow.py',
+                         'src/axm_uc/simulation.py','tools/run_uc_simulation_lab.py',
+                         'tools/run_uc_trajectory_learning.py'):
             files[relative] = hashlib.sha256((path/relative).read_bytes()).hexdigest()
     result['source_sha256'] = files
     return result
