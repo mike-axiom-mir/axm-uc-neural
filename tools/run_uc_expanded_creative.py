@@ -307,7 +307,7 @@ if __name__=="__main__": print(json.dumps(summarize(),sort_keys=True))
     return [_request_base(request, **ctx)]
 
 
-def _collect_prior_binary(catalog: list[dict]) -> tuple[dict, list[dict]]:
+def _collect_prior_binary(catalog: list[dict], *, allowed_root: Path | None = None) -> tuple[dict, list[dict]]:
     """Copy a bounded sample of earlier binary creations into the next compound."""
     media = {
         ".glb": "model/gltf-binary",
@@ -317,6 +317,7 @@ def _collect_prior_binary(catalog: list[dict]) -> tuple[dict, list[dict]]:
         ".webp": "image/webp",
         ".wav": "audio/wav",
     }
+    allowed_root = (ROOT / "creations").resolve() if allowed_root is None else Path(allowed_root).resolve()
     binaries = {}
     inventory = []
     total = 0
@@ -326,7 +327,7 @@ def _collect_prior_binary(catalog: list[dict]) -> tuple[dict, list[dict]]:
         raw = Path(item["path"])
         target = (raw if raw.is_absolute() else ROOT / raw).resolve()
         try:
-            target.relative_to((ROOT / "creations").resolve())
+            target.relative_to(allowed_root)
         except ValueError:
             continue
         if not target.exists():
