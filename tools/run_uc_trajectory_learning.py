@@ -91,24 +91,58 @@ def _episode(brain, provider, seed, occurrence, *, train):
     }
 
 
-def evaluate(brain, provider_map, seeds):
+def _greedy_episode(brain, provider, seed):
+    """Use learned transition predictions to choose each next temporary pass."""
+    from axm_neural_network.simulation_contract import verified_transition
     from neural.axm_brain import AXMBrain
 
+    working = AXMBrain.from_snapshot(brain.to_snapshot())
+    _reset_episode(working)
+    state = provider.reset(seed)
+    total_mse = 0.0
+    chosen = []
+    terminal_reward = None
+    for _ in range(provider.HORIZON):
+        candidates = []
+        for action in provider.ACTION_VALUES:
+            observation = [state.structure, state.surface, state.detail, state.verification, action]
+            prediction = working.predict(observation, update_state=False)
+            bounded = [max(0.0, min(1.0, value)) for value in prediction]
+            candidates.append((sum(bounded), action, prediction))
+        _, action, predicted = min(candidates, key=lambda row: (row[0], row[1]))
+        result = provider.step(state, action)
+        event = verified_transition(provider, result["experience"], spec=provider.describe_space())
+        total_mse += sum((a - b) ** 2 for a, b in zip(predicted, event["target"])) / len(predicted)
+        # Preserve recurrent path context during evaluation, but do not learn.
+        working.predict(event["observation"], update_state=True)
+        state = provider.restore(provider.snapshot(result["state"]))
+        chosen.append(action)
+        if event["terminal"]:
+            terminal_reward = event.get("reward")
+    return {
+        "terminal_reward": terminal_reward,
+        "final_debt": state.structure + state.surface + state.detail + state.verification,
+        "transition_mse": total_mse / provider.HORIZON,
+        "actions": chosen,
+    }
+
+
+def evaluate(brain, provider_map, seeds):
     rows = {}
     total_reward = total_debt = total_mse = 0.0
     count = 0
     for name, provider in provider_map.items():
         rewards = debts = losses = 0.0
         for seed in seeds:
-            outcome = _episode(AXMBrain.from_snapshot(brain.to_snapshot()), provider, seed, 0, train=False)
+            outcome = _greedy_episode(brain, provider, seed)
             rewards += float(outcome["terminal_reward"])
             debts += outcome["final_debt"]
-            losses += outcome["mse"]
+            losses += outcome["transition_mse"]
         n = len(seeds)
         rows[name] = {
-            "mean_terminal_reward": rewards / n,
-            "mean_final_debt": debts / n,
-            "mean_transition_mse": losses / n,
+            "greedy_mean_terminal_reward": rewards / n,
+            "greedy_mean_final_debt": debts / n,
+            "greedy_mean_transition_mse": losses / n,
             "episodes": n,
         }
         total_reward += rewards
@@ -117,10 +151,11 @@ def evaluate(brain, provider_map, seeds):
         count += n
     return {
         "families": rows,
-        "mean_terminal_reward": total_reward / count,
-        "mean_final_debt": total_debt / count,
-        "mean_transition_mse": total_mse / count,
+        "greedy_mean_terminal_reward": total_reward / count,
+        "greedy_mean_final_debt": total_debt / count,
+        "greedy_mean_transition_mse": total_mse / count,
         "episodes": count,
+        "policy": "choose the pass with the lowest predicted next unresolved-work sum",
     }
 
 
@@ -184,6 +219,9 @@ def train_batch(brain, provider_map, *, start_episode, episodes, training_seeds)
         raise ValueError("terminal reward was not applied exactly once per trajectory")
     if brain.replay:
         raise ValueError("temporary simulation experience leaked into replay memory")
+    # Keep learned weights/counters/reward baseline, but do not persist the
+    # transient hidden/eligibility state of the final temporary world.
+    _reset_episode(brain)
     return {
         "episode_start": start_episode,
         "episode_end": start_episode + episodes,
@@ -270,6 +308,7 @@ def main(argv=None):
         },
         "truth": [
             "Every verified temporary trajectory transition directly updates the experimental neural brain.",
+            "Held-out behavior uses the learned transition model to choose the lowest-predicted-debt next pass; the brain is not yet a native action-policy network.",
             "Recurrent hidden state and eligibility traces persist inside a trajectory and reset between independent simulations.",
             "Only the terminal step carries the bounded final reward in this provider.",
             "The provider's design-debt dynamics and terminal reward are experimental heuristics, not aesthetic truth.",
