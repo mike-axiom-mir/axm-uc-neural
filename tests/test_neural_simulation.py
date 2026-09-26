@@ -5,6 +5,7 @@ import unittest
 
 from axm_uc import simulation
 from axm_uc.neural_simulation import CanvasFitSimulation, _packet
+from axm_uc.workflow_simulation import WorkflowPassSimulation, WorkflowState
 
 
 class CanvasSimulationTests(unittest.TestCase):
@@ -38,6 +39,42 @@ class CanvasSimulationTests(unittest.TestCase):
             with self.assertRaises(ValueError): provider.step(state,value)
         with self.assertRaises(ValueError): provider.step(provider.step(state,0)['state'],0)
         with self.assertRaises(ValueError): CanvasFitSimulation('inside').step(state,0)
+
+    def test_workflow_profiles_replay_exactly_and_keep_grounded_stage_groups(self):
+        for family in WorkflowPassSimulation.FAMILIES:
+            provider = WorkflowPassSimulation(family)
+            self.assertEqual(set(provider.stage_groups), set(WorkflowPassSimulation.ACTION_NAMES))
+            self.assertTrue(all(provider.stage_groups.values()))
+            states = [provider.reset(seed) for seed in range(8)]
+            actions = [WorkflowPassSimulation.ACTION_VALUES[index % 4] for index in range(len(states))]
+            results = provider.step_many(states, actions)
+            for result in results:
+                body = provider.verify_transition(result['experience'])
+                self.assertEqual(body['selected_capabilities'], provider.stage_groups[body['workflow_pass']])
+                self.assertTrue(body['verification']['bounded_debt'])
+                self.assertEqual(provider.restore(json.loads(json.dumps(provider.snapshot(result['state'])))), result['state'])
+
+    def test_workflow_order_exposes_upstream_rework_instead_of_fake_progress(self):
+        provider = WorkflowPassSimulation('static-3d')
+        state = WorkflowState(.9, .8, .7, .4, 41, 0, 'static-3d')
+        surface = provider.step(state, -.25)['experience']['body']
+        structure = provider.step(state, -.75)['experience']['body']
+        verify = provider.step(state, .75)['experience']['body']
+        self.assertFalse(surface['prerequisites_ready'])
+        self.assertTrue(structure['prerequisites_ready'])
+        self.assertFalse(verify['prerequisites_ready'])
+        self.assertLess(structure['target'][0], surface['target'][0])
+        self.assertGreaterEqual(verify['target'][3], max(state.structure, state.surface, state.detail))
+
+    def test_workflow_packet_tampering_fails_replay(self):
+        provider = WorkflowPassSimulation('image')
+        packet = provider.step(provider.reset(19), .25)['experience']
+        for key, value in [('workflow_pass', 'structure'), ('target', [0, 0, 0, 0]),
+                           ('selected_capabilities', ['invented']), ('experience_source', 'external_run')]:
+            body = deepcopy(packet['body'])
+            body[key] = value
+            with self.assertRaises(ValueError):
+                provider.verify_transition(_packet(body))
 
     def test_uc_adapter_does_not_import_the_learner(self):
         # This module's standalone suite runs without either neural repository.
