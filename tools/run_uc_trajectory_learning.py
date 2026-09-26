@@ -53,14 +53,24 @@ def _episode(brain, provider, seed, occurrence, *, train):
     from neural.axm_brain import AXMBrain, Experience, XorShift64
 
     working = brain if train else AXMBrain.from_snapshot(brain.to_snapshot())
+    actions_rng = XorShift64((seed ^ (occurrence * 104729) ^ 0x9D31) & XorShift64.MASK)
+    actions = [actions_rng.uniform(-1.0, 1.0) for _ in range(provider.HORIZON)]
+    if train:
+        from axm_uc.neural_trajectory_bridge import learn_verified_trajectory
+        receipt = learn_verified_trajectory(working, provider, seed, actions, remember=False)
+        final = receipt["final_state"]
+        return {
+            "mse": receipt["mean_transition_mse"],
+            "terminal_reward": receipt["terminal_reward"],
+            "final_debt": sum(final[key] for key in ("structure", "surface", "detail", "verification")),
+            "trace_sha256": receipt["trajectory_digest"],
+        }
     _reset_episode(working)
     state = provider.reset(seed)
-    actions = XorShift64((seed ^ (occurrence * 104729) ^ 0x9D31) & XorShift64.MASK)
     transcript = hashlib.sha256()
     loss = 0.0
     terminal_reward = None
-    for index in range(provider.HORIZON):
-        action = actions.uniform(-1.0, 1.0)
+    for index, action in enumerate(actions):
         result = provider.step(state, action)
         event = verified_transition(provider, result["experience"], spec=provider.describe_space())
         if event["before"] != provider.snapshot(state)["body"]["state"]:
@@ -69,17 +79,7 @@ def _episode(brain, provider, seed, occurrence, *, train):
             raise ValueError("trajectory terminal boundary mismatch")
         prediction = working.predict(event["observation"], update_state=False)
         loss += sum((a - b) ** 2 for a, b in zip(prediction, event["target"])) / len(prediction)
-        if train:
-            working.experience(
-                Experience(
-                    event["observation"],
-                    target=event["target"],
-                    reward=event.get("reward"),
-                    source=event["experience_source"],
-                    tag=result["experience"]["sha256"],
-                ),
-                remember=False,
-            )
+        working.predict(event["observation"], update_state=True)
         transcript.update(_digest_packet(result["experience"]) + b"\n")
         terminal_reward = event.get("reward") if event["terminal"] else terminal_reward
         state = provider.restore(provider.snapshot(result["state"]))
